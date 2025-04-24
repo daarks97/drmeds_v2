@@ -3,7 +3,8 @@ import { Play, Pause, CheckCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useUserXP } from '@/hooks/useUserXP';
-import confetti from 'canvas-confetti';
+// ❌ Remover import estático
+// import confetti from 'canvas-confetti';
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -50,12 +51,13 @@ const FocusTimerWidget = () => {
     setIsPaused(false);
   };
 
-  const handleEnd = () => {
+  const handleEnd = async () => {
     const xpAmount = xpPreview;
     if (addXP) {
       addXP.mutate({ xpAmount });
     }
     if (minutes >= 15) {
+      const confetti = await import("canvas-confetti").then(m => m.default);
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
     }
     setIsActive(false);

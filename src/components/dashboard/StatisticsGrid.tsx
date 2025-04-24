@@ -5,7 +5,21 @@ import { BookOpen, RefreshCw, AlertCircle, Award, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
-import confetti from 'canvas-confetti';
+useEffect(() => {
+  const showConfetti = async () => {
+    if ((fetchedStatistics?.totalStudied || 0) > 50) {
+      const confetti = await import("canvas-confetti").then(m => m.default);
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    }
+  };
+
+  showConfetti();
+}, [fetchedStatistics?.totalStudied]);
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StatisticsGridProps {

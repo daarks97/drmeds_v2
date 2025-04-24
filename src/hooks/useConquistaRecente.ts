@@ -1,7 +1,5 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import confetti from "canvas-confetti";
 
 export const useConquistaRecente = () => {
   const { toast } = useToast();
@@ -30,8 +28,9 @@ export const useConquistaRecente = () => {
         return;
       }
 
-      // Mostrar toast com animação
-      setTimeout(() => {
+      // Mostrar toast com confete (dinâmico)
+      setTimeout(async () => {
+        const confetti = await import("canvas-confetti").then(m => m.default);
         confetti({
           particleCount: 100,
           spread: 70,
