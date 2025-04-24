@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { ganharXP } from "./xp";
 
+// Busca todas as revisões de um tema para um usuário
 export async function buscarRevisoesDoTema(userId: string, tema: string) {
   const { data, error } = await supabase
     .from("revisoes")
@@ -12,6 +13,7 @@ export async function buscarRevisoesDoTema(userId: string, tema: string) {
   return { revisoes: data || [], error };
 }
 
+// Marca uma revisão como concluída e gera a próxima (D7 ou D30)
 export async function concluirRevisao(id: string) {
   // 1. Buscar a revisão atual
   const { data: atual, error: errBusca } = await supabase
@@ -69,3 +71,13 @@ export async function concluirRevisao(id: string) {
 
   return { nova, error: errNova };
 }
+
+// Alias necessário para resolver o erro no useRevisionMutations.ts
+export const markRevisionAsCompleted = concluirRevisao;
+
+// Exportações organizadas
+export {
+  buscarRevisoesDoTema,
+  concluirRevisao,
+  markRevisionAsCompleted, // esse nome é usado nos hooks
+};
