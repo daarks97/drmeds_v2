@@ -22,15 +22,18 @@ const TemaEditor = () => {
   const [respondida, setRespondida] = useState(false);
 
   const handleConcluirTema = async () => {
-    if (!session?.user?.id) return;
+    if (!id) return;
     setConcluindo(true);
-    const res = await concluirTema(session.user.id, nomeTema);
-    setConcluindo(false);
-    if (res.success) {
+
+    try {
+      await concluirTema(id);
       alert("Tema concluído! Revisões agendadas.");
-    } else {
+    } catch (err) {
+      console.error(err);
       alert("Erro ao concluir tema.");
     }
+
+    setConcluindo(false);
   };
 
   const handleConcluirRevisao = async (id: string) => {
