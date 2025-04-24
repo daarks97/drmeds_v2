@@ -1,5 +1,5 @@
 import React from "react";
-import { HashRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "./integrations/supabase/client";
@@ -34,8 +34,8 @@ const App = () => {
     <SessionContextProvider supabaseClient={supabase}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />          {/* ✅ Componente principal de toast */}
-          <ToastSonner />      {/* Sonner, se quiser manter ambos */}
+          <Toaster />
+          <ToastSonner />
           <Router>
             <RoutesWrapper />
           </Router>
