@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { registrarRespostaQuestao } from "@/lib/supabase/questoes";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from '@/hooks/use-toast'
 import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import Footer from "@/components/Footer";
 
 interface Questao {

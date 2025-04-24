@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@supabase/auth-helpers-react";
 import { registrarRespostaQuestao } from "@/lib/supabase/questoes";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 type Questao = {
   id: string;

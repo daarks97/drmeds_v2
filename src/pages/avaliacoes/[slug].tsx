@@ -7,7 +7,7 @@ import QuestionDisplay from "@/components/avaliacoes/QuestionDisplay";
 import QuestionNavigation from "@/components/avaliacoes/QuestionNavigation";
 import { useQuestions } from "@/hooks/avaliacoes/useQuestions";
 import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const AvaliacaoSlug = () => {
   const { slug } = useParams();
