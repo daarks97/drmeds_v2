@@ -21,7 +21,7 @@ import NotFound from "./pages/notFound";
 
 import TopNavigation from "./components/TopNavigation";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Toaster } from "@/components/ui/toaster"; // ✅ caminho corrigido
+import { Toaster } from "@/components/ui/ToastContainer";
 import { Toaster as ToastSonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import QuestionModal from "@/components/avaliacoes/QuestionModal";
