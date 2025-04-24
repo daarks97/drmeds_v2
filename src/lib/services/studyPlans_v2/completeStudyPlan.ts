@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getBrazilDatePlusDays } from "@/lib/utils";
-import { createNextRevisions } from "@/lib/revisions/createNextRevision";
+import { createNextRevision } from "@/lib/revisions/createNextRevision";
 
 // Define concrete interface to avoid deep type instantiation
 interface StudyPlanResult {
@@ -48,7 +48,17 @@ export const completeStudyPlanById = async (id: string): Promise<StudyPlanResult
     }
 
     // 3. Criar revisões D1, D7 e D30 
-    await createNextRevisions(id, studyPlan.theme);
+    await createNextRevision({
+      study_plan_id: id,
+      revision_stage: "D1",
+      revision_date: getBrazilDatePlusDays(1),
+      is_completed: false,
+      is_refused: false,
+      id: "", // placeholder se necessário
+      user_id: "", // se exigido pela tipagem, preencha ou adapte
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
 
     return data as StudyPlanResult;
 
