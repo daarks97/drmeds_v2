@@ -63,6 +63,24 @@ async function concluirRevisao(id: string) {
   return { nova, error: errNova };
 }
 
+// Recusa uma revisão (marca como "is_refused: true")
+async function markRevisionAsRefused(id: string) {
+  const { error } = await supabase
+    .from("revisoes")
+    .update({
+      is_refused: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("❌ Erro ao recusar revisão:", error);
+    throw error;
+  }
+
+  return { success: true };
+}
+
 // Alias necessário para hooks que usam esse nome
 const markRevisionAsCompleted = concluirRevisao;
 
@@ -70,4 +88,5 @@ export {
   buscarRevisoesDoTema,
   concluirRevisao,
   markRevisionAsCompleted,
+  markRevisionAsRefused,
 };
