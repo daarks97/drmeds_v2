@@ -1,8 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getBrazilDatePlusDays } from "@/lib/utils";
-import { createNextRevision } from "@/lib/revisions/createNextRevision";
+import { Revision } from "@/lib/types";
 
-// Define concrete interface to avoid deep type instantiation
 interface StudyPlanResult {
   id: string;
   theme: string;
@@ -25,9 +24,9 @@ export const completeStudyPlanById = async (id: string): Promise<StudyPlanResult
       .eq("id", id)
       .single();
 
-    if (fetchError) {
+    if (fetchError || !studyPlan) {
       console.error("❌ Erro ao buscar tema:", fetchError);
-      throw fetchError;
+      throw fetchError ?? new Error("Plano de estudo não encontrado.");
     }
 
     // 2. Marcar como concluído com data
@@ -42,23 +41,36 @@ export const completeStudyPlanById = async (id: string): Promise<StudyPlanResult
       .select()
       .single();
 
-    if (error) {
+    if (error || !data) {
       console.error("❌ Erro ao atualizar tema como concluído:", error);
-      throw error;
+      throw error ?? new Error("Erro ao marcar plano como concluído.");
     }
 
-    // 3. Criar revisões D1, D7 e D30 
-    await createNextRevision({
+    // 3. Buscar usuário
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Usuário não autenticado.");
+
+    // 4. Criar revisões D1, D7, D30
+    const revisionsToCreate: Omit<Revision, "id">[] = ["D1", "D7", "D30"].map((stage) => ({
+      user_id: user.id,
       study_plan_id: id,
-      revision_stage: "D1",
-      revision_date: getBrazilDatePlusDays(1),
+      theme: studyPlan.theme,
+      revision_stage: stage as "D1" | "D7" | "D30",
+      revision_date: getBrazilDatePlusDays(stage === "D1" ? 1 : stage === "D7" ? 7 : 30),
       is_completed: false,
       is_refused: false,
-      id: "", // placeholder se necessário
-      user_id: "", // se exigido pela tipagem, preencha ou adapte
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    });
+    }));
+
+    const { error: insertError } = await supabase
+      .from("revisions")
+      .insert(revisionsToCreate);
+
+    if (insertError) {
+      console.error("❌ Erro ao criar revisões D1, D7, D30:", insertError);
+      throw insertError;
+    }
 
     return data as StudyPlanResult;
 
@@ -68,6 +80,5 @@ export const completeStudyPlanById = async (id: string): Promise<StudyPlanResult
   }
 };
 
-// ✅ Exportações necessárias para evitar erros nos imports
 export { completeStudyPlanById as concluirTema };
 export { completeStudyPlanById as markStudyPlanAsCompleted };

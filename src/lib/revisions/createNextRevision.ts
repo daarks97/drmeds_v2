@@ -1,53 +1,53 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Revision } from "@/lib/types";
-import { getBrazilDatePlusDays } from "@/lib/dateHelpers";
+import { getBrazilDatePlusDays } from "@/lib/utils";
 
-type RevisionStage = "D1" | "D7" | "D30";
+export const createNextRevisions = async (studyPlanId: string, theme: string) => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-const nextStageMap: Record<RevisionStage, RevisionStage | null> = {
-  D1: "D7",
-  D7: "D30",
-  D30: null,
-};
-
-const daysToAddMap: Record<RevisionStage, number> = {
-  D1: 7,
-  D7: 23, // Corrigido de 30 → 23 para manter 30 dias totais se necessário
-  D30: 0,
-};
-
-export const createNextRevision = async (
-  currentRevision: Revision
-): Promise<Revision | null> => {
-  const { revision_stage, study_plan_id } = currentRevision;
-
-  const nextStage = nextStageMap[revision_stage];
-  const daysToAdd = daysToAddMap[revision_stage];
-
-  if (!nextStage) {
-    console.info("✅ Ciclo de revisão completo (D30). Nenhuma nova revisão criada.");
-    return null;
+  if (userError || !user) {
+    console.error("❌ Erro ao obter usuário:", userError);
+    throw new Error("Usuário não autenticado.");
   }
 
-  const revisionDateStr = getBrazilDatePlusDays(daysToAdd);
+  const revisionsToInsert = [
+    {
+      user_id: user.id,
+      study_plan_id: studyPlanId,
+      theme,
+      revision_stage: "D1",
+      revision_date: getBrazilDatePlusDays(1),
+      is_completed: false,
+      is_refused: false,
+    },
+    {
+      user_id: user.id,
+      study_plan_id: studyPlanId,
+      theme,
+      revision_stage: "D7",
+      revision_date: getBrazilDatePlusDays(7),
+      is_completed: false,
+      is_refused: false,
+    },
+    {
+      user_id: user.id,
+      study_plan_id: studyPlanId,
+      theme,
+      revision_stage: "D30",
+      revision_date: getBrazilDatePlusDays(30),
+      is_completed: false,
+      is_refused: false,
+    },
+  ];
 
   const { data, error } = await supabase
     .from("revisions")
-    .insert({
-      study_plan_id,
-      revision_date: revisionDateStr,
-      revision_stage: nextStage,
-      is_completed: false,
-      is_refused: false,
-    })
-    .select()
-    .single();
+    .insert(revisionsToInsert);
 
   if (error) {
-    console.error(`❌ Erro ao criar revisão ${nextStage}:`, error.message);
+    console.error("❌ Erro ao criar revisões automáticas:", error);
     throw error;
   }
 
-  console.log(`✅ Revisão ${nextStage} agendada para ${revisionDateStr}`);
-  return data as Revision;
+  console.log("✅ Revisões D1, D7 e D30 criadas:", data);
+  return data;
 };
