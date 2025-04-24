@@ -5,11 +5,9 @@ import { fetchStudyPlan } from "./fetchStudyPlans";
 import { createStudyPlan } from "./createStudyPlan";
 import { updateStudyPlan } from "./updateStudyPlan";
 import { deleteStudyPlan } from "./deleteStudyPlan";
-import { completeStudyPlanById } from "./completeStudyPlan"; // ✅ Corrigido aqui
+import { completeStudyPlanById } from "@/lib/studyPlans_v2/completeStudyPlan";
 import { toggleStudyPlanCompletion } from "./toggleStudyPlanCompletion";
 import { toggleStudyPlanDifficulty } from "./toggleStudyPlanDifficulty";
-// Remova a linha abaixo se ainda existir erro:
-// import { generateStudyPlan } from "./generateStudyPlan";
 
 export {
   fetchStudyPlans,
@@ -17,8 +15,7 @@ export {
   createStudyPlan,
   updateStudyPlan,
   deleteStudyPlan,
-  completeStudyPlanById, // ✅ Corrigido aqui também
+  completeStudyPlanById,
   toggleStudyPlanCompletion,
   toggleStudyPlanDifficulty,
-  // generateStudyPlan,
 };
