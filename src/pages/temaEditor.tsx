@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession } from "@supabase/auth-helpers-react";
 import { salvarResumo, buscarResumo } from "@/lib/supabase/resumos";
-import { concluirTema } from "@/services/studyPlans_v2/completeStudyPlan";
+import { concluirTema } from "@/lib/services/studyPlans_v2/completeStudyPlan";
 import { buscarRevisoesDoTema, concluirRevisao } from "@/lib/supabase/manageRevisions";
 import { registrarRespostaQuestao } from "@/lib/supabase/questoes";
 
