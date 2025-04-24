@@ -1,106 +1,57 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchTodayRevisions,
-  fetchTomorrowRevisions,
-  fetchLateRevisions,
-  fetchRefusedRevisions,
-} from "@/services/revisions/fetchRevisions";
+import { fetchRevisions } from "@/lib/revisions/fetchRevisions";
+import { Revision } from "@/lib/types";
+import { isToday, isTomorrow, isBefore, parseISO } from "date-fns";
 
 export const useRevisionQueries = () => {
   const queryClient = useQueryClient();
 
-  const todayRevisionsQuery = useQuery({
-    queryKey: ["todayRevisions"],
-    queryFn: fetchTodayRevisions,
-    staleTime: 0, // Always consider data stale to force refetch
-    refetchOnWindowFocus: true,
-    refetchOnMount: true, // Added to refetch when component mounts
-    refetchOnReconnect: true, // Added to refetch on network reconnect
-  });
-
-  const tomorrowRevisionsQuery = useQuery({
-    queryKey: ["tomorrowRevisions"],
-    queryFn: fetchTomorrowRevisions,
+  const revisionsQuery = useQuery<Revision[]>({
+    queryKey: ["allRevisions"],
+    queryFn: fetchRevisions,
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
   });
 
-  const lateRevisionsQuery = useQuery({
-    queryKey: ["lateRevisions"],
-    queryFn: fetchLateRevisions,
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-  });
+  const todayRevisions = (revisionsQuery.data ?? []).filter(
+    (r) => !r.is_completed && !r.is_refused && isToday(parseISO(r.revision_date))
+  );
 
-  const refusedRevisionsQuery = useQuery({
-    queryKey: ["refusedRevisions"],
-    queryFn: fetchRefusedRevisions,
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-  });
+  const tomorrowRevisions = (revisionsQuery.data ?? []).filter(
+    (r) => !r.is_completed && !r.is_refused && isTomorrow(parseISO(r.revision_date))
+  );
 
-  const isLoading = todayRevisionsQuery.isLoading || 
-                    tomorrowRevisionsQuery.isLoading || 
-                    lateRevisionsQuery.isLoading || 
-                    refusedRevisionsQuery.isLoading;
+  const lateRevisions = (revisionsQuery.data ?? []).filter(
+    (r) => !r.is_completed && !r.is_refused && isBefore(parseISO(r.revision_date), new Date())
+  );
 
-  const hasError = todayRevisionsQuery.error || 
-                   tomorrowRevisionsQuery.error || 
-                   lateRevisionsQuery.error || 
-                   refusedRevisionsQuery.error;
+  const refusedRevisions = (revisionsQuery.data ?? []).filter(
+    (r) => r.is_refused === true
+  );
 
-  // Add logs for debugging
-  console.log("Resultado das consultas de revisões:");
-  console.log("Hoje:", todayRevisionsQuery.data);
-  console.log("Amanhã:", tomorrowRevisionsQuery.data);
-  console.log("Atrasadas:", lateRevisionsQuery.data);
-  console.log("Recusadas:", refusedRevisionsQuery.data);
-  console.log("Estado de carregamento:", isLoading);
-  console.log("Erros:", hasError);
+  const isLoading = revisionsQuery.isLoading;
+  const hasError = revisionsQuery.error;
 
   const refetchAll = async () => {
-    console.log("Forçando refetch de todas as revisões");
-    
+    console.log("🔄 Refetching todas as revisões...");
     try {
-      // Invalidate queries first to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ["todayRevisions"] });
-      queryClient.invalidateQueries({ queryKey: ["tomorrowRevisions"] });
-      queryClient.invalidateQueries({ queryKey: ["lateRevisions"] });
-      queryClient.invalidateQueries({ queryKey: ["refusedRevisions"] });
-      
-      // Then manually refetch with a small delay to ensure invalidation completes
-      setTimeout(async () => {
-        try {
-          await Promise.all([
-            todayRevisionsQuery.refetch(),
-            tomorrowRevisionsQuery.refetch(),
-            lateRevisionsQuery.refetch(),
-            refusedRevisionsQuery.refetch()
-          ]);
-          console.log("Refetch completo de todas as revisões");
-        } catch (err) {
-          console.error("Erro durante refetch após delay:", err);
-        }
-      }, 300);
+      await queryClient.invalidateQueries({ queryKey: ["allRevisions"] });
+      await revisionsQuery.refetch();
+      console.log("✅ Refetch completo!");
     } catch (err) {
-      console.error("Erro durante refetch de revisões:", err);
+      console.error("❌ Erro durante refetch de revisões:", err);
     }
   };
 
   return {
-    todayRevisions: todayRevisionsQuery.data ?? [],
-    tomorrowRevisions: tomorrowRevisionsQuery.data ?? [],
-    lateRevisions: lateRevisionsQuery.data ?? [],
-    refusedRevisions: refusedRevisionsQuery.data ?? [],
+    todayRevisions,
+    tomorrowRevisions,
+    lateRevisions,
+    refusedRevisions,
     isLoading,
     hasError,
-    refetchAll
+    refetchAll,
   };
 };

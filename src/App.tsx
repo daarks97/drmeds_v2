@@ -21,7 +21,6 @@ import Onboarding from "./pages/onboarding";
 import Index from "./pages/index";
 import Home from "./pages/home";
 import PlannerPage from "./pages/planner";
-import Revisions from "./pages/revisions";
 import MeuCaderno from "./pages/meuCaderno";
 import TemaEditor from "./pages/temaEditor";
 import Avaliacoes from "./pages/avaliacoes/index";
@@ -71,7 +70,6 @@ const MainLayout = () => {
             <Route path="/dashboard" element={<Index />} />
             <Route path="/home" element={<Home />} />
             <Route path="/planejamento" element={<PlannerPage />} />
-            <Route path="/revisions" element={<Revisions />} />
             <Route path="/perfil" element={<UserProfile />} />
             <Route path="/meu-caderno" element={<MeuCaderno />} />
             <Route path="/meu-caderno/tema/:id" element={<TemaEditor />} />
