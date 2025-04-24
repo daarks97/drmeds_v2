@@ -46,27 +46,27 @@ const MeuCaderno = () => {
 
     if (topic.is_completed) {
       return {
-        icon: <Check className="h-4 w-4 text-green-500" />,
+        icon: <Check className="h-4 w-4 text-green-400" />,
         label: 'Concluído',
-        color: 'bg-green-200 text-green-900'
+        color: 'bg-green-900 text-green-100'
       };
     } else if (topic.planned_date < today) {
       return {
-        icon: <AlertTriangle className="h-4 w-4 text-amber-500" />,
+        icon: <AlertTriangle className="h-4 w-4 text-amber-400" />,
         label: 'Pendente',
-        color: 'bg-amber-200 text-amber-900'
+        color: 'bg-amber-900 text-amber-100'
       };
     } else if (topic.planned_date === today) {
       return {
-        icon: <Brain className="h-4 w-4 text-purple-500" />,
+        icon: <Brain className="h-4 w-4 text-purple-400" />,
         label: 'Hoje',
-        color: 'bg-purple-200 text-purple-900'
+        color: 'bg-purple-900 text-purple-100'
       };
     } else if (topic.planned_date === tomorrowStr) {
       return {
-        icon: <BookOpen className="h-4 w-4 text-blue-500" />,
+        icon: <BookOpen className="h-4 w-4 text-blue-400" />,
         label: 'Amanhã',
-        color: 'bg-blue-200 text-blue-900'
+        color: 'bg-blue-900 text-blue-100'
       };
     }
 
@@ -86,7 +86,7 @@ const MeuCaderno = () => {
           <Input
             type="text"
             placeholder="Buscar tema ou disciplina..."
-            className="pl-8"
+            className="pl-8 bg-card border-border text-foreground"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -97,7 +97,7 @@ const MeuCaderno = () => {
         <Accordion type="multiple" className="w-full">
           {Object.entries(topicsByDiscipline).map(([discipline, topics]) => (
             <AccordionItem key={discipline} value={discipline}>
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-purple-400">
+              <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-yellow-400">
                 <span className="flex items-center">
                   <BookOpen className="mr-2 h-5 w-5" />
                   {discipline} ({topics.length})
@@ -115,7 +115,7 @@ const MeuCaderno = () => {
                         <div className="flex flex-col gap-2">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h3 className="font-medium">{topic.theme}</h3>
+                              <h3 className="font-medium text-foreground">{topic.theme}</h3>
                               <p className="text-xs text-muted-foreground mt-1">
                                 {new Date(topic.planned_date).toLocaleDateString('pt-BR')}
                               </p>
@@ -130,7 +130,7 @@ const MeuCaderno = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 border-border"
                               onClick={() => handleTopicClick(topic.id)}
                             >
                               <Pencil className="h-3.5 w-3.5" />

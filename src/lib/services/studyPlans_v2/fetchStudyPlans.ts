@@ -1,38 +1,24 @@
-// src/services/studyPlans_v2/fetchStudyPlans.ts
 import { supabase } from "@/integrations/supabase/client";
 import { StudyPlan } from "@/lib/types";
+import { QueryFunctionContext } from "@tanstack/react-query";
 
-export const fetchStudyPlans = async (discipline?: string): Promise<StudyPlan[]> => {
+export const fetchStudyPlans = async (
+  ctx: QueryFunctionContext<readonly unknown[]>
+): Promise<StudyPlan[]> => {
+  // Extrai disciplina com segurança
+  const discipline = (ctx.queryKey[1] as string | undefined) ?? 'Todas';
+
   let query = supabase
     .from("study_plans")
     .select("*")
     .order("planned_date", { ascending: true });
 
-  if (discipline && discipline !== "Todas") {
+  if (discipline !== "Todas") {
     query = query.eq("discipline", discipline);
   }
 
   const { data, error } = await query;
 
-  if (error) {
-    console.error("❌ Erro ao buscar planos de estudo:", error);
-    throw error;
-  }
-
+  if (error) throw error;
   return data as StudyPlan[];
-};
-
-export const fetchStudyPlan = async (id: string): Promise<StudyPlan> => {
-  const { data, error } = await supabase
-    .from("study_plans")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    console.error("❌ Erro ao buscar plano de estudo:", error);
-    throw error;
-  }
-
-  return data as StudyPlan;
 };

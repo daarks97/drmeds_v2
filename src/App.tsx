@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
@@ -30,6 +30,10 @@ import PerformanceModal from "@/components/avaliacoes/PerformanceModal";
 const queryClient = new QueryClient();
 
 const App = () => {
+  useEffect(() => {
+    document.documentElement.classList.add("dark"); // força dark mode
+  }, []);
+
   return (
     <SessionContextProvider supabaseClient={supabase}>
       <QueryClientProvider client={queryClient}>
@@ -59,7 +63,7 @@ const RoutesWrapper = () => {
     </Routes>
   ) : (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background text-foreground">
         <TopNavigation />
         <main className="pt-16 p-8">
           <Routes>

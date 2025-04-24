@@ -7,10 +7,11 @@ import { Check, Clock, Calendar, Pencil, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { fetchStudyPlans } from '@/services/studyPlans_v2';
+import { fetchStudyPlans } from '@/lib/services/studyPlans_v2/fetchStudyPlans';
 import { useStudyPlanMutations } from '@/hooks/useStudyPlanMutations';
 import { useQuestionsModal } from '@/hooks/avaliacoes/useQuestionsModal';
 import { Helmet } from 'react-helmet';
+import { StudyPlan } from '@/lib/types';
 
 const Planner: React.FC = () => {
   const navigate = useNavigate();
@@ -21,11 +22,12 @@ const Planner: React.FC = () => {
   const formattedDate = format(today, "EEEE, dd 'de' MMMM", { locale: ptBR });
   const todayStr = today.toISOString().split('T')[0];
 
-  const { data: studyPlans = [] } = useQuery({
-    queryKey: ['studyPlans'],
+  const { data } = useQuery<StudyPlan[]>({
+    queryKey: ['studyPlans', 'Todas'],
     queryFn: fetchStudyPlans
   });
 
+  const studyPlans = (data ?? []) as StudyPlan[];
   const todayPlans = studyPlans.filter(plan => plan.planned_date === todayStr);
 
   const handleTopicClick = (topicId: string) => {
@@ -35,14 +37,14 @@ const Planner: React.FC = () => {
   const getTopicStatus = (isCompleted: boolean) => {
     return isCompleted
       ? {
-          icon: <Check className="h-4 w-4 text-green-500" />,
+          icon: <Check className="h-4 w-4 text-green-400" />,
           label: 'Concluído',
-          color: 'bg-green-200 text-green-900'
+          color: 'bg-green-900 text-green-100'
         }
       : {
-          icon: <Clock className="h-4 w-4 text-purple-500" />,
+          icon: <Clock className="h-4 w-4 text-purple-400" />,
           label: 'Hoje',
-          color: 'bg-purple-200 text-purple-900'
+          color: 'bg-purple-900 text-purple-100'
         };
   };
 
@@ -56,9 +58,8 @@ const Planner: React.FC = () => {
         />
       </Helmet>
 
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
+        <h1 className="text-2xl font-semibold flex items-center gap-2 text-yellow-400">
           <Calendar className="h-6 w-6 text-purple-500" />
           {formattedDate}
         </h1>
@@ -68,7 +69,6 @@ const Planner: React.FC = () => {
         </p>
       </div>
 
-      {/* Today's topics list */}
       <div className="space-y-4 mb-8">
         {todayPlans.map(topic => {
           const status = getTopicStatus(topic.is_completed);
@@ -80,7 +80,7 @@ const Planner: React.FC = () => {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-medium">{topic.theme}</h3>
+                  <h3 className="font-medium text-foreground">{topic.theme}</h3>
                   <p className="text-sm text-muted-foreground">{topic.discipline}</p>
                 </div>
                 <Badge className={`${status.color} flex items-center gap-1`}>
@@ -93,7 +93,7 @@ const Planner: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 border-border"
                   onClick={() => handleTopicClick(topic.id)}
                 >
                   <Pencil className="h-3.5 w-3.5" />
@@ -103,7 +103,7 @@ const Planner: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 border-border"
                   onClick={() =>
                     openQuestionsModal('Simulado', new Date().getFullYear(), false, topic.theme)
                   }
@@ -116,7 +116,7 @@ const Planner: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex items-center gap-1 text-green-700 border-green-200 hover:bg-green-50"
+                    className="flex items-center gap-1 border-green-600 text-green-400 hover:bg-green-900"
                     onClick={() => markCompletedMutation.mutate(topic.id)}
                   >
                     <Check className="h-3.5 w-3.5" />
@@ -135,11 +135,10 @@ const Planner: React.FC = () => {
         )}
       </div>
 
-      {/* Footer buttons */}
       <div className="flex gap-4 justify-center">
         <Button
           variant="outline"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-border"
           onClick={() => navigate('/calendario')}
         >
           <Calendar className="h-4 w-4" />

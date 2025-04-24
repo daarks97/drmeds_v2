@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useDashboard } from '@/hooks/useDashboard';
@@ -11,14 +10,7 @@ import WeeklyRanking from '@/components/dashboard/WeeklyRanking';
 
 const Home = () => {
   const {
-    studyTopic,
-    reviewTopic,
     enhancedUserStats,
-    studyPlans,
-    handleMarkStudyCompleted,
-    handleViewTopic,
-    handleMarkReviewCompleted,
-    handleRejectReview
   } = useDashboard();
   
   const { data: weeklyProgress } = useWeeklyProgress();
@@ -33,21 +25,14 @@ const Home = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Coluna Principal */}
         <div className="md:col-span-8 space-y-6">
-          <DashboardWelcome userStats={enhancedUserStats} />
-          
-          {weeklyProgress < 100 && (
+          <DashboardWelcome userName={enhancedUserStats.userName} />
+
+          {Number(weeklyProgress ?? 0) < 100 && (
             <MotivationAlert />
           )}
-          
-          <StudySuggestion 
-            studyTopic={studyTopic} 
-            reviewTopic={reviewTopic} 
-            onStudyComplete={handleMarkStudyCompleted}
-            onReviewComplete={handleMarkReviewCompleted}
-            onReviewReject={handleRejectReview}
-            onViewTopic={handleViewTopic}
-          />
-          
+
+          <StudySuggestion />
+
           <WeeklyProgress />
         </div>
 

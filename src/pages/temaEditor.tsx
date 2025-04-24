@@ -24,7 +24,6 @@ const TemaEditor = () => {
   const handleConcluirTema = async () => {
     if (!id) return;
     setConcluindo(true);
-
     try {
       await concluirTema(id);
       alert("Tema concluído! Revisões agendadas.");
@@ -32,14 +31,12 @@ const TemaEditor = () => {
       console.error(err);
       alert("Erro ao concluir tema.");
     }
-
     setConcluindo(false);
   };
 
   const handleConcluirRevisao = async (id: string) => {
     setAtualizando(true);
     const res = await concluirRevisao(id);
-
     const revisaoConcluida = revisoes.find((r) => r.id === id);
     const atualizada = revisaoConcluida
       ? { ...revisaoConcluida, concluida: true, data_conclusao: new Date().toISOString() }
@@ -49,7 +46,6 @@ const TemaEditor = () => {
       const novaLista = prev.map((r) => (r.id === id ? atualizada : r));
       return res.nova ? [...novaLista, res.nova] : novaLista;
     });
-
     setAtualizando(false);
   };
 
@@ -83,9 +79,7 @@ const TemaEditor = () => {
 
   const handleResposta = async (alternativa: string) => {
     if (!session?.user?.id || respondida) return;
-
     setRespondida(true);
-
     const acertou = alternativa === "C";
     await registrarRespostaQuestao({
       userId: session.user.id,
@@ -93,7 +87,6 @@ const TemaEditor = () => {
       tema: nomeTema,
       acertou,
     });
-
     alert(acertou ? "✅ Acertou! +2XP" : "❌ Errou! Tente de novo.");
   };
 
@@ -102,11 +95,11 @@ const TemaEditor = () => {
       <Button 
         variant="outline" 
         onClick={() => navigate('/meu-caderno')}
-        className="mb-6"
+        className="mb-6 border-border text-foreground"
       >
         Voltar ao Caderno
       </Button>
-      
+
       <div className="space-y-6 max-w-4xl mx-auto bg-card rounded-2xl shadow-md p-8 border border-border">
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold text-yellow-400">{nomeTema}</h1>
@@ -116,7 +109,7 @@ const TemaEditor = () => {
         </div>
 
         <Tabs defaultValue="resumo" className="w-full">
-          <TabsList>
+          <TabsList className="bg-muted text-muted-foreground border border-border">
             <TabsTrigger value="resumo">Resumo</TabsTrigger>
             <TabsTrigger value="revisar">Revisar</TabsTrigger>
             <TabsTrigger value="questoes">Questões</TabsTrigger>
@@ -125,13 +118,13 @@ const TemaEditor = () => {
           <TabsContent value="resumo">
             <div className="flex justify-between items-center mb-4 text-muted-foreground text-sm">
               <div>🧠 Tempo estimado: 25 minutos</div>
-              <div>⏱️ Pomodoro: <span className="text-green-500">25:00</span></div>
+              <div>⏱️ Pomodoro: <span className="text-green-400">25:00</span></div>
             </div>
             <Textarea
               value={resumo}
               onChange={(e) => setResumo(e.target.value)}
               placeholder="Escreva aqui seu resumo, esquemas, tópicos..."
-              className="w-full min-h-[300px] bg-muted border border-border"
+              className="w-full min-h-[300px] bg-muted border border-border text-foreground"
             />
             <div className="mt-4 flex gap-3">
               <Button
@@ -141,8 +134,7 @@ const TemaEditor = () => {
               >
                 {salvando ? "Salvando..." : "Salvar"}
               </Button>
-              <Button variant="outline">Exportar PDF</Button>
-
+              <Button variant="outline" className="border-border">Exportar PDF</Button>
               <Button
                 className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={handleConcluirTema}
@@ -167,9 +159,9 @@ const TemaEditor = () => {
                     <div>
                       {rev.tipo} – {new Date(rev.data_revisao).toLocaleDateString()} –{" "}
                       {rev.concluida ? (
-                        <span className="text-green-500">Concluído</span>
+                        <span className="text-green-400">Concluído</span>
                       ) : (
-                        <span className="text-red-500">Pendente</span>
+                        <span className="text-red-400">Pendente</span>
                       )}
                     </div>
                     {!rev.concluida && (
@@ -178,6 +170,7 @@ const TemaEditor = () => {
                         variant="outline"
                         disabled={atualizando}
                         onClick={() => handleConcluirRevisao(rev.id)}
+                        className="border-border"
                       >
                         Marcar como feita
                       </Button>
@@ -194,10 +187,10 @@ const TemaEditor = () => {
               <li className="bg-muted p-4 rounded-lg border border-border">
                 <p className="mb-2">1. Qual o principal sintoma de AVC isquêmico em artéria cerebral média esquerda?</p>
                 <div className="space-y-2">
-                  <Button onClick={() => handleResposta("A")} disabled={respondida} variant="outline" className="w-full text-left justify-start">A) Afasia</Button>
-                  <Button onClick={() => handleResposta("B")} disabled={respondida} variant="outline" className="w-full text-left justify-start">B) Hemianopsia</Button>
-                  <Button onClick={() => handleResposta("C")} disabled={respondida} variant="outline" className="w-full text-left justify-start">C) Hemiparesia direita</Button>
-                  <Button onClick={() => handleResposta("D")} disabled={respondida} variant="outline" className="w-full text-left justify-start">D) Disartria</Button>
+                  <Button onClick={() => handleResposta("A")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">A) Afasia</Button>
+                  <Button onClick={() => handleResposta("B")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">B) Hemianopsia</Button>
+                  <Button onClick={() => handleResposta("C")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">C) Hemiparesia direita</Button>
+                  <Button onClick={() => handleResposta("D")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">D) Disartria</Button>
                 </div>
               </li>
             </ul>

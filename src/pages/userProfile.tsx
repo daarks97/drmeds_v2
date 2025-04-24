@@ -10,15 +10,6 @@ import Footer from '@/components/Footer';
 import { Helmet } from 'react-helmet';
 import AchievementsPanel from "@/components/AchievementsPanel";
 
-export const Perfil = () => {
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-6">Minhas Conquistas</h1>
-      <AchievementsPanel />
-    </div>
-  );
-};
-
 interface UserData {
   id: string;
   name: string;
@@ -95,7 +86,7 @@ const UserProfile = () => {
 
         {loading ? (
           <div className="flex justify-center">
-            <p>Carregando...</p>
+            <p className="text-muted-foreground">Carregando...</p>
           </div>
         ) : (
           <div className="space-y-8">
@@ -107,7 +98,9 @@ const UserProfile = () => {
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16 border border-border">
                     <AvatarImage src="/placeholder.svg" alt={user?.name} />
-                    <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-muted text-yellow-400">
+                      {user?.name?.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
 
                   <div>
@@ -116,19 +109,19 @@ const UserProfile = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <h3 className="font-medium">Curso</h3>
+                    <h3 className="font-medium text-muted-foreground">Curso</h3>
                     <p className="text-foreground">{user?.course || 'Não definido'}</p>
                   </div>
 
                   <div>
-                    <h3 className="font-medium">Especialidade</h3>
+                    <h3 className="font-medium text-muted-foreground">Especialidade</h3>
                     <p className="text-foreground">{user?.specialty || 'Não definido'}</p>
                   </div>
 
                   <div>
-                    <h3 className="font-medium">Nível Acadêmico</h3>
+                    <h3 className="font-medium text-muted-foreground">Nível Acadêmico</h3>
                     <p className="text-foreground">{user?.level || 'Não definido'}</p>
                   </div>
                 </div>
@@ -141,21 +134,30 @@ const UserProfile = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-purple-100 text-purple-900 p-4 rounded-lg">
+                  <div className="bg-purple-900 text-purple-100 p-4 rounded-lg">
                     <h3 className="text-sm font-medium">Nível</h3>
                     <p className="text-2xl font-bold">{userXP?.level || 1}</p>
                   </div>
 
-                  <div className="bg-blue-100 text-blue-900 p-4 rounded-lg">
+                  <div className="bg-blue-900 text-blue-100 p-4 rounded-lg">
                     <h3 className="text-sm font-medium">XP Total</h3>
                     <p className="text-2xl font-bold">{userXP?.xp || 0}</p>
                   </div>
 
-                  <div className="bg-green-100 text-green-900 p-4 rounded-lg">
+                  <div className="bg-green-900 text-green-100 p-4 rounded-lg">
                     <h3 className="text-sm font-medium">Conquistas</h3>
                     <p className="text-2xl font-bold">--</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border border-border">
+              <CardHeader>
+                <CardTitle>Minhas Conquistas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AchievementsPanel />
               </CardContent>
             </Card>
 

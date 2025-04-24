@@ -51,11 +51,14 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center px-6 py-12 relative">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-800 text-foreground flex flex-col justify-center items-center px-6 py-12 relative overflow-hidden">
       <Helmet>
         <title>Comece com o DrMeds</title>
         <meta name="description" content="Configure seu plano inicial de estudos em poucos passos com o DrMeds." />
       </Helmet>
+
+      <div className="absolute -top-16 -left-16 w-[400px] h-[400px] rounded-full bg-yellow-400 blur-[100px] opacity-20 animate-pulse" />
+      <div className="absolute -bottom-16 -right-16 w-[300px] h-[300px] rounded-full bg-purple-600 blur-[100px] opacity-10 animate-pulse" />
 
       {showConfetti && <Confetti numberOfPieces={250} recycle={false} />}
 
@@ -63,7 +66,7 @@ export default function Onboarding() {
         <Progress value={progress} className="h-2 bg-muted" indicatorClassName="bg-yellow-400" />
       </div>
 
-      <div className="bg-card p-6 rounded-2xl w-full max-w-md shadow-md border border-border text-center transition-all duration-300">
+      <div className="bg-card p-6 rounded-2xl w-full max-w-md shadow-lg border border-border text-center transition-all duration-300">
         {step === 0 && (
           <>
             <h2 className="text-yellow-400 text-xl font-semibold mb-4">Como podemos te chamar?</h2>
@@ -72,7 +75,7 @@ export default function Onboarding() {
               value={data.nome}
               onChange={(e) => atualizar("nome", e.target.value)}
             />
-            <Button className="mt-4 w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300" onClick={avancar}>
+            <Button className="mt-4 w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 hover:scale-[1.02] transition-transform" onClick={avancar}>
               Continuar
             </Button>
           </>
@@ -87,7 +90,7 @@ export default function Onboarding() {
               value={data.diasSemana}
               onChange={(e) => atualizar("diasSemana", e.target.value)}
             />
-            <Button className="mt-4 w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300" onClick={avancar}>
+            <Button className="mt-4 w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 hover:scale-[1.02] transition-transform" onClick={avancar}>
               Continuar
             </Button>
           </>
@@ -114,7 +117,7 @@ export default function Onboarding() {
                 </label>
               ))}
             </div>
-            <Button className="mt-4 w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300" onClick={avancar}>
+            <Button className="mt-4 w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 hover:scale-[1.02] transition-transform" onClick={avancar}>
               Continuar
             </Button>
           </>
@@ -153,7 +156,7 @@ export default function Onboarding() {
             <h2 className="text-yellow-400 text-xl font-semibold mb-4">Quer que a gente monte suas revisões automaticamente?</h2>
             <div className="flex flex-col gap-2">
               <Button
-                className="w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300"
+                className="w-full bg-yellow-400 text-black font-bold hover:bg-yellow-300 hover:scale-[1.02] transition-transform"
                 disabled={saving}
                 onClick={() => {
                   atualizar("revisoes", true);

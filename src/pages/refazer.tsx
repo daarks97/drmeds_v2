@@ -66,21 +66,24 @@ export default function RefazerQuestoes() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-6 py-10 flex justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-zinc-800 text-foreground px-6 py-10 flex justify-center relative overflow-hidden">
       <Helmet>
         <title>Refazer Questões | DrMeds</title>
         <meta name="description" content="Revise questões que você errou e fortaleça seus pontos fracos." />
       </Helmet>
 
+      <div className="absolute -top-16 -left-16 w-[400px] h-[400px] rounded-full bg-yellow-400 blur-[100px] opacity-20 animate-pulse" />
+      <div className="absolute -bottom-16 -right-16 w-[300px] h-[300px] rounded-full bg-purple-600 blur-[100px] opacity-10 animate-pulse" />
+
       <div className="w-full max-w-3xl">
-        <h1 className="text-2xl font-bold text-yellow-400 mb-6">
+        <h1 className="text-3xl font-extrabold text-yellow-400 mb-8 drop-shadow">
           🔁 Refazendo questões erradas ({questoes.length})
         </h1>
 
         {questoes.map((q, i) => (
-          <div key={q.id} className="mb-6 bg-card p-4 rounded-xl border border-border">
-            <p className="mb-2 font-semibold">{i + 1}. {q.enunciado}</p>
-            <div className="space-y-2">
+          <div key={q.id} className="mb-6 bg-zinc-900 p-6 rounded-xl border border-zinc-700 shadow">
+            <p className="mb-3 font-semibold text-lg text-zinc-100">{i + 1}. {q.enunciado}</p>
+            <div className="space-y-3">
               {Object.entries(q.alternativas).map(([letra, texto]) => {
                 const selecionada = respostas[q.id] === letra;
                 const correta = letra === q.resposta_correta;
@@ -91,15 +94,15 @@ export default function RefazerQuestoes() {
                     variant="outline"
                     disabled={!!respostas[q.id]}
                     onClick={() => handleResponder(q, letra)}
-                    className={`w-full justify-start text-left transition ${
+                    className={`w-full justify-start text-left transition-all text-base font-medium border border-border rounded-lg py-3 px-4 ${
                       selecionada
                         ? correta
                           ? "bg-green-600 text-white"
                           : "bg-red-600 text-white"
-                        : ""
+                        : "bg-zinc-800 hover:bg-zinc-700 text-white"
                     }`}
                   >
-                    <b>{letra})</b> {texto}
+                    <b className="mr-2">{letra})</b> {texto}
                   </Button>
                 );
               })}
@@ -108,13 +111,13 @@ export default function RefazerQuestoes() {
         ))}
 
         {concluida && (
-          <div className="text-center mt-10">
-            <p className="text-green-400 text-lg font-bold mb-4">
+          <div className="text-center mt-12">
+            <p className="text-green-400 text-xl font-semibold mb-6">
               ✅ Você terminou de refazer todas as questões!
             </p>
             <Button
               onClick={() => navigate("/questoes/respondidas")}
-              className="bg-yellow-400 text-black font-bold hover:bg-yellow-300"
+              className="bg-yellow-400 text-black font-bold px-6 py-3 rounded-full hover:bg-yellow-300 shadow-lg transition hover:scale-105"
             >
               Voltar para o histórico
             </Button>
