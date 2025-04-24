@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast";
 import { useUserXP } from '@/hooks/useUserXP';
 import Footer from '@/components/Footer';
 import { Helmet } from 'react-helmet';

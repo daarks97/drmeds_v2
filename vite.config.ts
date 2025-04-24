@@ -6,15 +6,15 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'), // 👈 ESSENCIAL
+      '@': path.resolve(__dirname, 'src'), // 👈 ESSENCIAL: Alias para a pasta 'src'
     },
   },
   server: {
-    host: '0.0.0.0',
+    host: '0.0.0.0', // Para acesso via rede local
   },
   build: {
     rollupOptions: {
-      input: '/index.html',
+      input: '/index.html', // Ponto de entrada para a construção
     },
   },
 });
