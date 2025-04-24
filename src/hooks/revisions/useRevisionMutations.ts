@@ -5,8 +5,8 @@ import {
   markRevisionAsCompleted,
   markRevisionAsRefused, 
   reactivateRevision 
-} from "@/services/revisions/manageRevisions";
-import { createNextRevision } from "@/services/revisions/createNextRevision";
+} from "@/lib/supabase/manageRevisions";
+import { createNextRevision } from "@/lib/revisions/createNextRevision";
 
 export const useRevisionMutations = () => {
   const { toast } = useToast();
