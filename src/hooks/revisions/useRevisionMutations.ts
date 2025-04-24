@@ -1,10 +1,9 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { 
+import {
   markRevisionAsCompleted,
-  markRevisionAsRefused, 
-  reactivateRevision 
+  markRevisionAsRefused,
+  reactivateRevision,
 } from "@/lib/supabase/manageRevisions";
 import { createNextRevision } from "@/lib/revisions/createNextRevision";
 
@@ -13,150 +12,97 @@ export const useRevisionMutations = () => {
   const queryClient = useQueryClient();
 
   const invalidateAllRevisionQueries = async () => {
-    console.log("Invalidating all revision queries");
-    await queryClient.invalidateQueries({ queryKey: ["todayRevisions"] });
-    await queryClient.invalidateQueries({ queryKey: ["tomorrowRevisions"] });
-    await queryClient.invalidateQueries({ queryKey: ["lateRevisions"] });
-    await queryClient.invalidateQueries({ queryKey: ["refusedRevisions"] });
-    console.log("All revision queries invalidated");
+    const keys = [
+      "todayRevisions",
+      "tomorrowRevisions",
+      "lateRevisions",
+      "refusedRevisions",
+      "allRevisions",
+    ];
+    console.log("🔄 Invalidando todas as queries de revisões...");
+    await Promise.all(keys.map((key) => queryClient.invalidateQueries({ queryKey: [key] })));
   };
 
   const markCompletedMutation = useMutation({
     mutationFn: async (id: string) => {
-      console.log("Iniciando mutação para marcar revisão como concluída:", id);
-      try {
-        // Step 1: Mark the current revision as completed
-        const completedRevision = await markRevisionAsCompleted(id);
-        console.log("Revisão marcada como concluída:", completedRevision);
-        
-        if (completedRevision) {
-          // Step 2: Create the next revision based on the current stage
-          console.log("Criando próxima revisão para:", completedRevision);
-          const nextRevision = await createNextRevision(completedRevision);
-          console.log("Próxima revisão criada:", nextRevision);
-          return { completedRevision, nextRevision };
-        }
-        
-        return { completedRevision };
-      } catch (error) {
-        console.error("Erro detalhado ao marcar revisão como concluída:", error);
-        throw error;
-      }
+      console.log("✅ Mutação: marcar revisão como concluída →", id);
+
+      const completedRevision = await markRevisionAsCompleted(id);
+      console.log("✔️ Revisão concluída:", completedRevision);
+
+      if (!completedRevision) return { completedRevision: null };
+
+      const nextRevision = await createNextRevision(completedRevision);
+      return { completedRevision, nextRevision };
     },
-    onSuccess: async (data) => {
-      console.log("Sucesso na mutação de conclusão:", data);
-      if (data.completedRevision) {
-        // Make sure to invalidate and refetch the queries
-        await invalidateAllRevisionQueries();
-        
-        let message = "Revisão concluída com sucesso!";
-        let description = "";
-        
-        if (data.nextRevision) {
-          switch (data.nextRevision.revision_stage) {
-            case "D7":
-              description = "Próxima revisão agendada para 7 dias.";
-              break;
-            case "D30":
-              description = "Próxima revisão agendada para 30 dias.";
-              break;
-            default:
-              description = "Próxima revisão agendada.";
-          }
-        } else if (data.completedRevision.revision_stage === "D30") {
-          description = "Parabéns! Você completou o ciclo de revisões para este tema.";
-        }
-        
-        toast({
-          title: message,
-          description: description,
-        });
-      }
+    onSuccess: async ({ completedRevision, nextRevision }) => {
+      await invalidateAllRevisionQueries();
+
+      const isFinal = completedRevision?.revision_stage === "D30";
+      const message = "Revisão concluída com sucesso!";
+      const description = nextRevision
+        ? `Próxima revisão agendada para ${nextRevision.revision_stage === "D7" ? "7" : "30"} dias.`
+        : isFinal
+        ? "Parabéns! Você completou o ciclo de revisões para este tema."
+        : "";
+
+      toast({ title: message, description });
     },
     onError: (error: any) => {
-      console.error("Erro ao marcar revisão como concluída:", error);
-      
-      // More specific error message
-      let errorMessage = "Não foi possível marcar a revisão como concluída.";
-      
-      if (error?.message) {
-        errorMessage += ` Detalhes: ${error.message}`;
-      }
-      
-      if (error?.code) {
-        console.error("Código de erro:", error.code);
-      }
-      
+      console.error("❌ Erro ao marcar revisão como concluída:", error);
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: `Não foi possível concluir a revisão. ${error?.message ?? ""}`,
         variant: "destructive",
       });
-    }
+    },
   });
 
   const refuseMutation = useMutation({
     mutationFn: (id: string) => {
-      console.log("Iniciando mutação para recusar revisão:", id);
+      console.log("⚠️ Mutação: recusar revisão →", id);
       return markRevisionAsRefused(id);
     },
-    onSuccess: async (data) => {
-      console.log("Revisão recusada com sucesso:", data);
+    onSuccess: async () => {
       await invalidateAllRevisionQueries();
-      toast({
-        title: "Revisão recusada",
-        description: "A revisão foi recusada com sucesso.",
-      });
+      toast({ title: "Revisão recusada", description: "A revisão foi recusada com sucesso." });
     },
     onError: (error: any) => {
-      console.error("Erro ao recusar revisão:", error);
-      
-      let errorMessage = "Não foi possível recusar a revisão.";
-      if (error?.message) {
-        errorMessage += ` Detalhes: ${error.message}`;
-      }
-      
+      console.error("❌ Erro ao recusar revisão:", error);
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: `Não foi possível recusar a revisão. ${error?.message ?? ""}`,
         variant: "destructive",
       });
-    }
+    },
   });
 
   const reactivateMutation = useMutation({
     mutationFn: (id: string) => {
-      console.log("Iniciando mutação para reativar revisão:", id);
+      console.log("♻️ Mutação: reativar revisão →", id);
       return reactivateRevision(id);
     },
-    onSuccess: async (data) => {
-      console.log("Revisão reativada com sucesso:", data);
+    onSuccess: async () => {
       await invalidateAllRevisionQueries();
-      toast({
-        title: "Revisão reativada",
-        description: "A revisão foi reativada com sucesso para amanhã.",
-      });
+      toast({ title: "Revisão reativada", description: "A revisão foi reativada para amanhã." });
     },
     onError: (error: any) => {
-      console.error("Erro ao reativar revisão:", error);
-      
-      let errorMessage = "Não foi possível reativar a revisão.";
-      if (error?.message) {
-        errorMessage += ` Detalhes: ${error.message}`;
-      }
-      
+      console.error("❌ Erro ao reativar revisão:", error);
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: `Não foi possível reativar a revisão. ${error?.message ?? ""}`,
         variant: "destructive",
       });
-    }
+    },
   });
 
   return {
     markAsCompleted: markCompletedMutation.mutate,
     refuse: refuseMutation.mutate,
     reactivate: reactivateMutation.mutate,
-    isLoading: markCompletedMutation.isPending || refuseMutation.isPending || reactivateMutation.isPending,
+    isLoading:
+      markCompletedMutation.isPending ||
+      refuseMutation.isPending ||
+      reactivateMutation.isPending,
   };
 };
