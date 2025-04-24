@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchStudyPlans } from '@/services/studyPlans_v2';
+import { fetchStudyPlans } from '@/lib/services/studyPlans_v2';
 import { WeeklySchedule } from '@/lib/types';
 import { useMemo } from 'react';
 
 export const useStudyPlansData = () => {
   const { data: studyPlans = [], isLoading: studyPlansLoading } = useQuery({
-    queryKey: ['studyPlans'],
-    queryFn: () => fetchStudyPlans(),
-  });
+    queryKey: ['studyPlans', 'Todas'],
+    queryFn: fetchStudyPlans,
+  });  
 
   const completedTopics = studyPlans.filter(plan => plan.is_completed).length;
   const totalTopics = studyPlans.length;

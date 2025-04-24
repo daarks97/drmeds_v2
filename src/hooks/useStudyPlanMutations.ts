@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { markStudyPlanAsCompleted, toggleStudyPlanCompletion } from '@/services/studyPlans_v2';
+import { markStudyPlanAsCompleted, toggleStudyPlanCompletion } from '@/lib/services/studyPlans_v2';
 import { useQuestionsModal } from '@/hooks/avaliacoes/useQuestionsModal';
 
 // Constantes globais

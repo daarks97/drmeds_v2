@@ -8,16 +8,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DISCIPLINES } from '@/lib/types';
 import { useQuery } from '@tanstack/react-query';
-import { fetchStudyPlans } from '@/services/studyPlans_v2';
+import { fetchStudyPlans } from '@/lib/services/studyPlans_v2';
 
 const MeuCaderno = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: studyPlans = [] } = useQuery({
-    queryKey: ['studyPlans'],
-    queryFn: () => fetchStudyPlans()
-  });
+    queryKey: ['studyPlans', 'Todas'],
+    queryFn: fetchStudyPlans
+  });  
 
   const filteredTopics = searchTerm
     ? studyPlans.filter(plan =>

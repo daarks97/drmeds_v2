@@ -1,4 +1,4 @@
-import { fetchStudyPlans, fetchStudyPlan } from "./fetchStudyPlans";
+import { fetchStudyPlans, fetchStudyPlan } from "@/lib/services/studyPlans_v2/fetchStudyPlans";
 import { createStudyPlan } from "./createStudyPlan";
 import { updateStudyPlan } from "./updateStudyPlan";
 import { deleteStudyPlan } from "./deleteStudyPlan";
