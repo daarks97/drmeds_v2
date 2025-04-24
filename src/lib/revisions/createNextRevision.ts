@@ -1,53 +1,55 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getBrazilDatePlusDays } from "@/lib/utils";
+import { getBrazilDatePlusDays } from "@/lib/dateHelpers";
+import { Revision } from "@/lib/types";
 
-export const createNextRevisions = async (studyPlanId: string, theme: string) => {
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+type RevisionStage = "D1" | "D7" | "D30";
 
-  if (userError || !user) {
-    console.error("❌ Erro ao obter usuário:", userError);
-    throw new Error("Usuário não autenticado.");
+export const createNextRevision = async (
+  currentRevision: Revision
+): Promise<Revision | null> => {
+  const { revision_stage, study_plan_id, user_id, theme } = currentRevision;
+
+  const nextStageMap: Record<RevisionStage, RevisionStage | null> = {
+    D1: "D7",
+    D7: "D30",
+    D30: null,
+  };
+
+  const daysToAddMap: Record<RevisionStage, number> = {
+    D1: 7,
+    D7: 30,
+    D30: 0,
+  };
+
+  const nextStage = nextStageMap[revision_stage];
+  const daysToAdd = daysToAddMap[revision_stage];
+
+  if (!nextStage) {
+    console.log("✅ Revisão finalizada (D30). Nenhuma nova revisão criada.");
+    return null;
   }
 
-  const revisionsToInsert = [
-    {
-      user_id: user.id,
-      study_plan_id: studyPlanId,
-      theme,
-      revision_stage: "D1",
-      revision_date: getBrazilDatePlusDays(1),
-      is_completed: false,
-      is_refused: false,
-    },
-    {
-      user_id: user.id,
-      study_plan_id: studyPlanId,
-      theme,
-      revision_stage: "D7",
-      revision_date: getBrazilDatePlusDays(7),
-      is_completed: false,
-      is_refused: false,
-    },
-    {
-      user_id: user.id,
-      study_plan_id: studyPlanId,
-      theme,
-      revision_stage: "D30",
-      revision_date: getBrazilDatePlusDays(30),
-      is_completed: false,
-      is_refused: false,
-    },
-  ];
+  const revisionDateStr = getBrazilDatePlusDays(daysToAdd);
 
   const { data, error } = await supabase
     .from("revisions")
-    .insert(revisionsToInsert);
+    .insert({
+      study_plan_id,
+      revision_stage: nextStage,
+      revision_date: revisionDateStr,
+      user_id,
+      theme,
+      is_completed: false,
+      is_refused: false,
+    })
+    .select()
+    .single();
 
   if (error) {
-    console.error("❌ Erro ao criar revisões automáticas:", error);
+    console.error("❌ Erro ao criar próxima revisão:", error.message);
     throw error;
   }
 
-  console.log("✅ Revisões D1, D7 e D30 criadas:", data);
-  return data;
+  console.log(`✅ Revisão ${nextStage} criada para ${revisionDateStr}`);
+  return data as Revision;
 };
