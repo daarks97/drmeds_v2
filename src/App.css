@@ -1,0 +1,50 @@
+/* === Root & Global === */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F3F4F6;
+  color: #374151;
+}
+
+/* === Cards === */
+.card-modern {
+  @apply bg-white rounded-lg shadow-soft border border-gray-100 transition-shadow hover:shadow-medium;
+}
+
+/* === Forms === */
+input,
+select,
+textarea {
+  @apply border-gray-200 rounded-md focus:ring-study-blue focus:border-study-blue;
+}
+
+/* === Buttons === */
+.btn-primary {
+  @apply bg-study-blue text-white hover:bg-study-darkblue transition-colors;
+}
+
+.btn-outline {
+  @apply border border-gray-200 text-study-gray hover:bg-gray-50 transition-colors;
+}
+
+/* === Status Indicators === */
+.status-completed {
+  @apply text-study-green;
+}
+
+.status-pending {
+  @apply text-yellow-500;
+}
+
+.status-late {
+  @apply text-study-red;
+}
+
+/* === Layout Containers === */
+.section-container {
+  @apply mb-8;
+}
