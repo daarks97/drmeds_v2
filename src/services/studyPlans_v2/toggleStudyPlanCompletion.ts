@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { StudyPlan } from "@/lib/types";
-import { markStudyPlanAsCompleted } from "./completeStudyPlan";
+import { markStudyPlanAsCompleted } from "@/lib/services/studyPlans_v2/completeStudyPlan"; // ✅ Corrigido
 
 // Centralizada para evitar duplicação
 function getBrazilDate() {
