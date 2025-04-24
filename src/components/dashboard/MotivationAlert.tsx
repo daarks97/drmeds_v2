@@ -1,30 +1,15 @@
-
 import React, { useEffect, useState } from 'react';
 import { Alert } from "@/components/ui/alert";
 import { Rocket, Timer, Trophy, PartyPopper } from "lucide-react";
 import { useWeeklyProgress } from '@/hooks/useWeeklyProgress';
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-useEffect(() => {
-  const showConfetti = async () => {
-    if ((fetchedStatistics?.totalStudied || 0) > 50) {
-      const confetti = await import("canvas-confetti").then(m => m.default);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-    }
-  };
-
-  showConfetti();
-}, [fetchedStatistics?.totalStudied]);
+import confetti from "canvas-confetti";
 
 const MotivationAlert = () => {
   const { data: progressData = 0 } = useWeeklyProgress();
   const [showConfetti, setShowConfetti] = useState(false);
   
-  // Garantir que progress seja um número
   const progress = typeof progressData === 'number' ? progressData : 0;
 
   useEffect(() => {
