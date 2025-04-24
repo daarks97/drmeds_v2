@@ -1,4 +1,3 @@
-// src/lib/revisions/createNextRevision.ts
 
 import { supabase } from "@/integrations/supabase/client";
 import { Revision } from "@/lib/types";

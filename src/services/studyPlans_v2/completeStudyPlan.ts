@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { getBrazilDatePlusDays } from "@/lib/utils";
-import { createNextRevisions } from "@/services/revisions/createNextRevisions";
+import { createNextRevisions } from "@/lib/revisions/createNextRevisions";
 
 interface StudyPlanResult {
   id: string;
