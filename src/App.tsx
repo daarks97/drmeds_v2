@@ -21,8 +21,8 @@ import NotFound from "./pages/notFound";
 
 import TopNavigation from "./components/TopNavigation";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Toaster } from "@/components/ui/Toast"; 
-import { Toaster as ToastSonner } from "@/components/ui/sonner";  // Renomeando para evitar confusão
+import { Toaster } from "@/components/ui/toaster"; // ✅ caminho corrigido
+import { Toaster as ToastSonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import QuestionModal from "@/components/avaliacoes/QuestionModal";
 import PerformanceModal from "@/components/avaliacoes/PerformanceModal";
@@ -34,8 +34,8 @@ const App = () => {
     <SessionContextProvider supabaseClient={supabase}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />  {/* Toast principal */}
-          <ToastSonner />  {/* Sonner */}
+          <Toaster />          {/* ✅ Componente principal de toast */}
+          <ToastSonner />      {/* Sonner, se quiser manter ambos */}
           <Router>
             <RoutesWrapper />
           </Router>
