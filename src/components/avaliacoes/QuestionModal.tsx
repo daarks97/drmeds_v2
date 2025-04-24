@@ -10,22 +10,8 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useQuestionsModal, useExamQuestions } from '@/hooks/avaliacoes/useQuestionsModal';
 import { supabase } from '@/integrations/supabase/client';
-useEffect(() => {
-  const showConfetti = async () => {
-    if ((fetchedStatistics?.totalStudied || 0) > 50) {
-      const confetti = await import("canvas-confetti").then(m => m.default);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-    }
-  };
-
-  showConfetti();
-}, [fetchedStatistics?.totalStudied]);
-
 import { Json } from '@/integrations/supabase/types';
+import confetti from "canvas-confetti";
 
 type QuestionData = {
   id?: string;
