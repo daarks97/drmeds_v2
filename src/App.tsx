@@ -38,30 +38,26 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <MainLayout />
+          <RoutesWrapper />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   </SessionContextProvider>
 );
 
-const MainLayout = () => {
+const RoutesWrapper = () => {
   const location = useLocation();
   const isAuthRoute = ["/", "/login", "/register", "/cadastro", "/onboarding"].includes(location.pathname);
 
-  if (isAuthRoute) {
-    return (
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/cadastro" element={<Register />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-      </Routes>
-    );
-  }
-
-  return (
+  return isAuthRoute ? (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/cadastro" element={<Register />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+    </Routes>
+  ) : (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <TopNavigation />
@@ -80,7 +76,6 @@ const MainLayout = () => {
           </Routes>
         </main>
 
-        {/* Modais globais */}
         <QuestionModal />
         <PerformanceModal />
       </div>
