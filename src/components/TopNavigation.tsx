@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast"; // Corrigido a importação
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserRound } from "lucide-react";
@@ -30,9 +29,7 @@ const TopNavigation = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast({
-      title: "Logout realizado com sucesso"
-    });
+    toast({ title: "Logout realizado com sucesso" }); // Agora `toast` está corretamente acessado
     navigate("/login");
   };
 
