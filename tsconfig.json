@@ -1,38 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ESNext",                        // Define o alvo do código compilado (ESNext para recursos mais recentes do JavaScript)
-    "module": "ESNext",                        // Define o sistema de módulos (ESNext para módulos modernos)
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],  // Definir as bibliotecas do JavaScript que seu código pode acessar (DOM, ESNext)
-    "jsx": "react-jsx",                       // Usar a sintaxe JSX do React 17+
-    "baseUrl": ".",                            // Define a base para as importações relativas
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]                       // Facilita a importação de arquivos dentro de 'src'
+      "@/*": ["./src/*"]
     },
-    "esModuleInterop": true,                   // Melhora a interoperabilidade entre módulos CommonJS e ES Modules
-    "allowJs": true,                           // Permite arquivos JavaScript no projeto
-    "skipLibCheck": true,                      // Ignora verificações de tipo em arquivos de biblioteca
-    "noImplicitAny": false,                    // Permite o tipo 'any' em algumas situações
-    "strict": true,                            // Ativa as verificações estritas para tipos
-    "strictNullChecks": false,                 // Permite valores null/undefined em tipos
-    "noUnusedLocals": false,                   // Desabilita erro para variáveis locais não utilizadas
-    "noUnusedParameters": false,               // Desabilita erro para parâmetros não utilizados
-    "resolveJsonModule": true,                 // Permite importar arquivos JSON como módulos
-    "moduleResolution": "node",                // Como o TypeScript resolve módulos (modo 'node' para compatibilidade com Node.js)
-    "isolatedModules": true,                   // Garante que cada arquivo possa ser compilado de forma isolada (necessário para `React`)
-    "skipDefaultLibCheck": true,               // Ignora a verificação de tipos na biblioteca padrão (geralmente útil para pacotes de terceiros)
-    "allowSyntheticDefaultImports": true,      // Permite imports sintéticos de default em pacotes ES6 que não têm um export default explícito
-    "noFallthroughCasesInSwitch": true         // Garante que não haja casos 'fall-through' em instruções switch
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strict": true,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "skipDefaultLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*"                                 // Inclui todos os arquivos dentro de src
-  ],
-  "exclude": [
-    "node_modules",                            // Exclui a pasta node_modules
-    "build",                                   // Exclui a pasta build (caso exista)
-    "dist"                                     // Exclui a pasta dist (caso exista)
-  ],
-  "references": [
-    { "path": "./tsconfig.app.json" },          // Referências para configurações específicas de aplicação
-    { "path": "./tsconfig.node.json" }          // Referências para configurações específicas de Node.js
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "build", "dist"]
 }
