@@ -13,7 +13,7 @@ async function buscarRevisoesDoTema(userId: string, tema: string) {
   return { revisoes: data || [], error };
 }
 
-// Marca uma revisão como concluída e gera a próxima (D7 ou D30)
+// Marca como concluída e gera próxima revisão (D7 ou D30)
 async function concluirRevisao(id: string) {
   const { data: atual, error: errBusca } = await supabase
     .from("revisoes")
@@ -63,7 +63,7 @@ async function concluirRevisao(id: string) {
   return { nova, error: errNova };
 }
 
-// Recusa uma revisão (marca como "is_refused: true")
+// Marca uma revisão como recusada
 async function markRevisionAsRefused(id: string) {
   const { error } = await supabase
     .from("revisoes")
@@ -81,7 +81,34 @@ async function markRevisionAsRefused(id: string) {
   return { success: true };
 }
 
-// Alias necessário para hooks que usam esse nome
+// Reativa uma revisão recusada (muda para amanhã e zera status)
+async function reactivateRevision(id: string) {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const revisionDate = tomorrow.toISOString().split("T")[0];
+
+  const { error } = await supabase
+    .from("revisoes")
+    .update({
+      is_refused: false,
+      is_completed: false,
+      status_revisao: null,
+      data_conclusao: null,
+      data_revisao: revisionDate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("❌ Erro ao reativar revisão:", error);
+    throw error;
+  }
+
+  return { success: true };
+}
+
+// Alias usado nos hooks
 const markRevisionAsCompleted = concluirRevisao;
 
 export {
@@ -89,4 +116,5 @@ export {
   concluirRevisao,
   markRevisionAsCompleted,
   markRevisionAsRefused,
+  reactivateRevision, // ✅ nova exportação
 };
