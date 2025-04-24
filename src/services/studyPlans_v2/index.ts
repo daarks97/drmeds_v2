@@ -1,22 +1,24 @@
 // src/services/studyPlans_v2/index.ts
 
-// Imports diretos — evite 'export *' em arquivos de serviço para clareza e controle
-import { fetchStudyPlans, fetchStudyPlan } from "./fetchStudyPlans";
+import { fetchStudyPlans } from "./fetchStudyPlans";
+import { fetchStudyPlan } from "./fetchStudyPlans";
 import { createStudyPlan } from "./createStudyPlan";
 import { updateStudyPlan } from "./updateStudyPlan";
 import { deleteStudyPlan } from "./deleteStudyPlan";
-import { markStudyPlanAsCompleted } from "./completeStudyPlan";
+import { completeStudyPlanById } from "./completeStudyPlan"; // ✅ Corrigido aqui
 import { toggleStudyPlanCompletion } from "./toggleStudyPlanCompletion";
 import { toggleStudyPlanDifficulty } from "./toggleStudyPlanDifficulty";
+// Remova a linha abaixo se ainda existir erro:
+// import { generateStudyPlan } from "./generateStudyPlan";
 
-// Exportação centralizada
 export {
   fetchStudyPlans,
   fetchStudyPlan,
   createStudyPlan,
   updateStudyPlan,
   deleteStudyPlan,
-  markStudyPlanAsCompleted,
+  completeStudyPlanById, // ✅ Corrigido aqui também
   toggleStudyPlanCompletion,
   toggleStudyPlanDifficulty,
+  // generateStudyPlan,
 };
