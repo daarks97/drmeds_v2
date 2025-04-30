@@ -21,10 +21,11 @@ export const useQuestions = (slug: string | undefined) => {
     const fetchQuestions = async () => {
       if (!slug) return;
 
+      // ⚠️ Corrigido: parsing seguro do slug
       const parts = slug.split('-');
-const ano = parseInt(parts[parts.length - 1]);
-const provaSlug = parts.slice(0, parts.length - 1).join('-');
-const prova = provaSlug.toUpperCase().replace(/-/g, ' ');
+      const ano = parseInt(parts[parts.length - 1]);
+      const provaSlug = parts.slice(0, parts.length - 1).join('-');
+      const prova = provaSlug.toUpperCase(); // ex: USP-SP
 
       if (!prova || isNaN(ano)) {
         toast({
@@ -56,7 +57,7 @@ const prova = provaSlug.toUpperCase().replace(/-/g, ' ');
         if (!data || data.length === 0) {
           toast({
             title: "Nenhuma questão encontrada",
-            description: "Esta prova não possui questões cadastradas",
+            description: `Esta prova (${prova} ${ano}) não possui questões cadastradas`,
             variant: "destructive",
           });
           return;
