@@ -21,9 +21,10 @@ export const useQuestions = (slug: string | undefined) => {
     const fetchQuestions = async () => {
       if (!slug) return;
 
-      const parts = slug.toLowerCase().split('-');
-      const ano = parseInt(parts[parts.length - 1]);
-      const prova = parts.slice(0, parts.length - 1).join('-');
+      const parts = slug.split('-');
+const ano = parseInt(parts[parts.length - 1]);
+const provaSlug = parts.slice(0, parts.length - 1).join('-');
+const prova = provaSlug.toUpperCase().replace(/-/g, ' ');
 
       if (!prova || isNaN(ano)) {
         toast({
