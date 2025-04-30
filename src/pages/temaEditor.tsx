@@ -6,6 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { supabase } from '@/integrations/supabase/client';
+import { FocusTimerWidget } from '@/components/ui/FocusTimerWidget';
 
 import { salvarResumo, buscarResumo } from '@/lib/supabase/resumos';
 import { concluirTema } from '@/lib/services/studyPlans_v2/completeStudyPlan';
@@ -17,15 +19,14 @@ const TemaEditor = () => {
   const navigate = useNavigate();
   const session = useSession();
 
-  const nomeSlug = id ?? '';
-  const nomeTema = decodeURIComponent(nomeSlug).replace(/-/g, ' ');
+  const [nomeTema, setNomeTema] = useState('Carregando...');
   const [resumoSalvo, setResumoSalvo] = useState('');
   const [revisoes, setRevisoes] = useState<any[]>([]);
   const [salvando, setSalvando] = useState(false);
   const [concluindo, setConcluindo] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
   const [respondida, setRespondida] = useState(false);
-  const [tempoRestante, setTempoRestante] = useState(25 * 60); // 25 min
+  const [modoTimer, setModoTimer] = useState<'contador' | 'pomodoro'>('contador');
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -35,46 +36,39 @@ const TemaEditor = () => {
     },
   });
 
-  // ⏱️ Temporizador Pomodoro
   useEffect(() => {
-    const intervalo = setInterval(() => {
-      setTempoRestante((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(intervalo);
-  }, []);
+    if (!id || !session?.user?.id || !editor) return;
 
-  const formatarTempo = (segundos: number) => {
-    const m = String(Math.floor(segundos / 60)).padStart(2, '0');
-    const s = String(segundos % 60).padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
-  // 🧠 Buscar resumo e revisões
-  useEffect(() => {
-    if (!session?.user?.id || !id || !editor) return;
-
-    buscarResumo(session.user.id, nomeTema).then((res) => {
-      if (res?.conteudo) {
-        editor.commands.setContent(res.conteudo);
-        setResumoSalvo(res.conteudo);
-      }
-    });
-
-    buscarRevisoesDoTema(session.user.id, nomeTema).then((res) => {
-      if (res?.revisoes) setRevisoes(res.revisoes);
-    });
-  }, [session, nomeTema, editor]);
+    // Buscar nome do tema (title) no Supabase usando ID
+    supabase
+      .from('study_plans')
+      .select('title')
+      .eq('id', id)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) return setNomeTema('Tema não encontrado');
+        setNomeTema(data.title);
+        buscarResumo(session.user.id, data.title).then((res) => {
+          if (res?.conteudo) {
+            editor.commands.setContent(res.conteudo);
+            setResumoSalvo(res.conteudo);
+          }
+        });
+        buscarRevisoesDoTema(session.user.id, data.title).then((res) => {
+          if (res?.revisoes) setRevisoes(res.revisoes);
+        });
+      });
+  }, [id, session, editor]);
 
   const handleSalvarResumo = async () => {
-    if (!session?.user?.id || !id) return;
+    if (!session?.user?.id || !id || nomeTema === 'Carregando...') return;
     setSalvando(true);
     const res = await salvarResumo(session.user.id, nomeTema, resumoSalvo);
     setSalvando(false);
-    if (res.success) {
-      toast({ title: 'Resumo salvo com sucesso!' });
-    } else {
-      toast({ title: 'Erro ao salvar resumo', variant: 'destructive' });
-    }
+    toast({
+      title: res.success ? 'Resumo salvo com sucesso!' : 'Erro ao salvar resumo',
+      variant: res.success ? 'default' : 'destructive',
+    });
   };
 
   const handleConcluirTema = async () => {
@@ -128,9 +122,28 @@ const TemaEditor = () => {
       <div className="space-y-6 max-w-4xl mx-auto bg-card rounded-2xl shadow-md p-8 border border-border">
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold text-yellow-400">{nomeTema}</h1>
-          <p className="text-sm text-muted-foreground">
-            Explore o tema no seu tempo, do seu jeito.
-          </p>
+          <p className="text-sm text-muted-foreground">Explore o tema no seu tempo, do seu jeito.</p>
+        </div>
+
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <div className="text-sm font-medium text-muted-foreground">⏱️ Selecione o modo de cronômetro:</div>
+            <div className="flex gap-2">
+              <Button
+                variant={modoTimer === 'contador' ? 'default' : 'outline'}
+                onClick={() => setModoTimer('contador')}
+              >
+                Contador
+              </Button>
+              <Button
+                variant={modoTimer === 'pomodoro' ? 'default' : 'outline'}
+                onClick={() => setModoTimer('pomodoro')}
+              >
+                Pomodoro
+              </Button>
+            </div>
+          </div>
+          <FocusTimerWidget mode={modoTimer} />
         </div>
 
         <Tabs defaultValue="resumo" className="w-full">
@@ -141,12 +154,6 @@ const TemaEditor = () => {
           </TabsList>
 
           <TabsContent value="resumo">
-            <div className="flex justify-between items-center mb-4 text-muted-foreground text-sm">
-              <div>🧠 Tempo estimado: 25 minutos</div>
-              <div>⏱️ Pomodoro: <span className="text-green-400">{formatarTempo(tempoRestante)}</span></div>
-            </div>
-
-            {/* Mini-toolbar TipTap */}
             {editor && (
               <div className="flex gap-2 mb-2 text-sm text-muted-foreground">
                 <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBold().run()}>B</Button>
@@ -157,7 +164,6 @@ const TemaEditor = () => {
               </div>
             )}
 
-            {/* Área clara do resumo */}
             <div className="bg-white text-black border border-border rounded-md p-4 min-h-[300px]">
               {editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>}
             </div>
