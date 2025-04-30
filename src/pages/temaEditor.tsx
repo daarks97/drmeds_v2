@@ -6,11 +6,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Heading from '@tiptap/extension-heading';
-import BulletList from '@tiptap/extension-bullet-list';
-import ListItem from '@tiptap/extension-list-item';
-import Bold from '@tiptap/extension-bold';
-import Italic from '@tiptap/extension-italic';
 
 import { salvarResumo, buscarResumo } from '@/lib/supabase/resumos';
 import { concluirTema } from '@/lib/services/studyPlans_v2/completeStudyPlan';
@@ -30,15 +25,31 @@ const TemaEditor = () => {
   const [concluindo, setConcluindo] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
   const [respondida, setRespondida] = useState(false);
+  const [tempoRestante, setTempoRestante] = useState(25 * 60); // 25 min
 
   const editor = useEditor({
-    extensions: [StarterKit, Heading.configure({ levels: [1, 2] }), BulletList, ListItem, Bold, Italic],
+    extensions: [StarterKit],
     content: '',
     onUpdate: ({ editor }) => {
       setResumoSalvo(editor.getHTML());
     },
   });
 
+  // ⏱️ Temporizador Pomodoro
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setTempoRestante((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(intervalo);
+  }, []);
+
+  const formatarTempo = (segundos: number) => {
+    const m = String(Math.floor(segundos / 60)).padStart(2, '0');
+    const s = String(segundos % 60).padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  // 🧠 Buscar resumo e revisões
   useEffect(() => {
     if (!session?.user?.id || !id || !editor) return;
 
@@ -132,31 +143,22 @@ const TemaEditor = () => {
           <TabsContent value="resumo">
             <div className="flex justify-between items-center mb-4 text-muted-foreground text-sm">
               <div>🧠 Tempo estimado: 25 minutos</div>
-              <div>⏱️ Pomodoro: <span className="text-green-400">[00:25:00]</span></div>
+              <div>⏱️ Pomodoro: <span className="text-green-400">{formatarTempo(tempoRestante)}</span></div>
             </div>
 
-            {/* Toolbar TipTap */}
+            {/* Mini-toolbar TipTap */}
             {editor && (
               <div className="flex gap-2 mb-2 text-sm text-muted-foreground">
-                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBold().run()}>
-                  <strong>B</strong>
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleItalic().run()}>
-                  <em>I</em>
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
-                  H1
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
-                  H2
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBulletList().run()}>
-                  • Lista
-                </Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBold().run()}>B</Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleItalic().run()}>I</Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>H1</Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>H2</Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBulletList().run()}>• Lista</Button>
               </div>
             )}
 
-            <div className="bg-muted border border-border rounded-md p-4 min-h-[300px] text-foreground">
+            {/* Área clara do resumo */}
+            <div className="bg-white text-black border border-border rounded-md p-4 min-h-[300px]">
               {editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>}
             </div>
 
