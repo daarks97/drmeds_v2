@@ -44,10 +44,6 @@ export const useExamQuestions = (prova: string | null, ano: number | null, onlyW
           .select('*')
           .eq('prova', prova)
           .eq('ano', ano)
-         console.log('🎯 Buscando questões:', { prova, ano });
-console.log('👉 Slug original:', slug);
-console.log('✅ Resultado do Supabase:', data);
-console.log('❌ Erro do Supabase:', error);
           .eq('user_id', user.id);
         
         if (error) throw error;
