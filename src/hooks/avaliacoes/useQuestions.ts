@@ -40,10 +40,11 @@ export const useQuestions = (slug: string | undefined) => {
       setIsLoading(true);
       try {
         const { data, error } = await supabase
-          .from('questoes')
-          .select('*')
-          .eq('prova', prova)
-          .eq('ano', ano);
+  .from('questoes')
+  .select('*')
+  .ilike('prova', prova)
+  .eq('ano', ano);
+
           console.log('🎯 Buscando questões:', { prova, ano });
 console.log('👉 Slug original:', slug);
 console.log('✅ Resultado do Supabase:', data);
