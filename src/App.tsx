@@ -13,6 +13,7 @@ import Home from "./pages/home";
 import PlannerPage from "./pages/planner";
 import MeuCaderno from "./pages/meuCaderno";
 import TemaEditor from "./pages/temaEditor";
+import NovoTema from "./pages/meuCaderno/novo"; // ✅ NOVO
 import Avaliacoes from "./pages/avaliacoes/index";
 import AvaliacaoSlug from "./pages/avaliacoes/[slug]";
 import UserProfile from "./pages/userProfile";
@@ -71,6 +72,7 @@ const RoutesWrapper = () => {
             <Route path="/planejamento" element={<PlannerPage />} />
             <Route path="/perfil" element={<UserProfile />} />
             <Route path="/meu-caderno" element={<MeuCaderno />} />
+            <Route path="/meu-caderno/novo" element={<NovoTema />} /> {/* ✅ NOVA ROTA */}
             <Route path="/meu-caderno/tema/:id" element={<TemaEditor />} />
             <Route path="/avaliacoes" element={<Avaliacoes />} />
             <Route path="/avaliacoes/:slug" element={<AvaliacaoSlug />} />
