@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Check, Clock, Calendar, Pencil, Brain } from 'lucide-react';
+import { Check, Clock, Calendar, Pencil, Brain, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,15 +58,25 @@ const Planner: React.FC = () => {
         />
       </Helmet>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold flex items-center gap-2 text-yellow-400">
-          <Calendar className="h-6 w-6 text-purple-500" />
-          {formattedDate}
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Você tem {todayPlans.length} tema{todayPlans.length !== 1 ? 's' : ''} planejado
-          {todayPlans.length !== 1 ? 's' : ''} para hoje.
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold flex items-center gap-2 text-yellow-400">
+            <Calendar className="h-6 w-6 text-purple-500" />
+            {formattedDate}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Você tem {todayPlans.length} tema{todayPlans.length !== 1 ? 's' : ''} planejado{todayPlans.length !== 1 ? 's' : ''} para hoje.
+          </p>
+        </div>
+
+        <Button
+          variant="default"
+          className="flex items-center gap-2"
+          onClick={() => navigate('/novo-tema')}
+        >
+          <Plus className="h-4 w-4" />
+          Novo Tema
+        </Button>
       </div>
 
       <div className="space-y-4 mb-8">
@@ -139,7 +149,7 @@ const Planner: React.FC = () => {
         <Button
           variant="outline"
           className="flex items-center gap-2 border-border"
-          onClick={() => navigate('/calendario')}
+          onClick={() => navigate('/planejamento-semanal')}
         >
           <Calendar className="h-4 w-4" />
           Ver planejamento da semana
