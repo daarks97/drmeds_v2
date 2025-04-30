@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
@@ -8,11 +8,12 @@ import QuestionNavigation from "@/components/avaliacoes/QuestionNavigation";
 import { useQuestions } from "@/hooks/avaliacoes/useQuestions";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { registrarRespostaQuestao } from "@/lib/supabase/questoes";
 
 const AvaliacaoSlug = () => {
   const { slug } = useParams();
-  const { toast } = useToast();
   const formattedSlug = slug?.toLowerCase() || "";
+  const { toast } = useToast();
   const { questions, isLoading } = useQuestions(formattedSlug);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,23 +41,27 @@ const AvaliacaoSlug = () => {
       const currentQuestion = questions[currentIndex];
       const acertou = alternativa === currentQuestion.correta;
 
-      const { error } = await supabase.from("respostas_questoes").insert({
-        questao_id: currentQuestion.id,
-        user_id: user.id,
-        alternativa_marcada: alternativa,
-        correta: currentQuestion.correta,
+      // 🔍 extrair prova e ano do slug
+      const parts = formattedSlug.split("-");
+      const ano = parseInt(parts[parts.length - 1]);
+      const prova = parts.slice(0, -1).join("-").toUpperCase();
+
+      const { success, error } = await registrarRespostaQuestao({
+        userId: user.id,
+        questaoId: currentQuestion.id,
         tema: currentQuestion.tema,
+        prova,
+        ano,
+        alternativa,
+        acertou
       });
 
-      if (error) throw error;
+      if (!success || error) throw error;
 
       if (acertou) {
         setAcertos((prev) => prev + 1);
-        await supabase.rpc('add_user_xp', {
-          user_uuid: user.id,
-          xp_amount: 2
-        });
       }
+
     } catch (error) {
       toast({
         title: "Erro ao salvar resposta",
