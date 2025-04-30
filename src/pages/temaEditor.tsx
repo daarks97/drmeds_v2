@@ -1,35 +1,76 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSession } from '@supabase/auth-helpers-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { useSession } from "@supabase/auth-helpers-react";
-import { salvarResumo, buscarResumo } from "@/lib/supabase/resumos";
-import { concluirTema } from "@/lib/services/studyPlans_v2/completeStudyPlan";
-import { buscarRevisoesDoTema, concluirRevisao } from "@/lib/supabase/manageRevisions";
-import { registrarRespostaQuestao } from "@/lib/supabase/questoes";
+import { toast } from '@/hooks/use-toast';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+
+import { salvarResumo, buscarResumo } from '@/lib/supabase/resumos';
+import { concluirTema } from '@/lib/services/studyPlans_v2/completeStudyPlan';
+import { buscarRevisoesDoTema, concluirRevisao } from '@/lib/supabase/manageRevisions';
+import { registrarRespostaQuestao } from '@/lib/supabase/questoes';
 
 const TemaEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const nomeTema = id?.toString().replace(/-/g, " ") || "Carregando...";
-  const [resumo, setResumo] = useState("");
   const session = useSession();
+
+  const nomeSlug = id ?? '';
+  const nomeTema = decodeURIComponent(nomeSlug).replace(/-/g, ' ');
+  const [resumoSalvo, setResumoSalvo] = useState('');
+  const [revisoes, setRevisoes] = useState<any[]>([]);
   const [salvando, setSalvando] = useState(false);
   const [concluindo, setConcluindo] = useState(false);
-  const [revisoes, setRevisoes] = useState<any[]>([]);
   const [atualizando, setAtualizando] = useState(false);
   const [respondida, setRespondida] = useState(false);
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '',
+    onUpdate: ({ editor }) => {
+      setResumoSalvo(editor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (!session?.user?.id || !id) return;
+
+    buscarResumo(session.user.id, nomeTema).then((res) => {
+      if (res?.conteudo && editor) {
+        editor.commands.setContent(res.conteudo);
+        setResumoSalvo(res.conteudo);
+      }
+    });
+
+    buscarRevisoesDoTema(session.user.id, nomeTema).then((res) => {
+      if (res?.revisoes) setRevisoes(res.revisoes);
+    });
+  }, [session, nomeTema, editor]);
+
+  const handleSalvarResumo = async () => {
+    if (!session?.user?.id || !id) return;
+    setSalvando(true);
+    const res = await salvarResumo(session.user.id, nomeTema, resumoSalvo);
+    setSalvando(false);
+
+    if (res.success) {
+      toast({ title: 'Resumo salvo com sucesso!' });
+    } else {
+      toast({ title: 'Erro ao salvar resumo', variant: 'destructive' });
+    }
+  };
 
   const handleConcluirTema = async () => {
     if (!id) return;
     setConcluindo(true);
     try {
       await concluirTema(id);
-      alert("Tema concluído! Revisões agendadas.");
+      toast({ title: 'Tema concluído! Revisões agendadas.' });
+      navigate('/meu-caderno');
     } catch (err) {
-      console.error(err);
-      alert("Erro ao concluir tema.");
+      toast({ title: 'Erro ao concluir tema', variant: 'destructive' });
     }
     setConcluindo(false);
   };
@@ -47,53 +88,26 @@ const TemaEditor = () => {
       return res.nova ? [...novaLista, res.nova] : novaLista;
     });
     setAtualizando(false);
-  };
-
-  useEffect(() => {
-    if (session?.user?.id && nomeTema !== "Carregando...") {
-      buscarResumo(session.user.id, nomeTema).then((res) => {
-        setResumo(res.conteudo);
-      });
-    }
-  }, [session, nomeTema]);
-
-  useEffect(() => {
-    if (session?.user?.id && nomeTema !== "Carregando...") {
-      buscarRevisoesDoTema(session.user.id, nomeTema).then((res) => {
-        if (res.revisoes) setRevisoes(res.revisoes);
-      });
-    }
-  }, [session, nomeTema]);
-
-  const handleSalvarResumo = async () => {
-    if (!session?.user?.id) return;
-    setSalvando(true);
-    const res = await salvarResumo(session.user.id, nomeTema, resumo);
-    setSalvando(false);
-    if (res.success) {
-      alert("Resumo salvo com sucesso!");
-    } else {
-      alert("Erro ao salvar resumo.");
-    }
+    toast({ title: 'Revisão marcada como feita!' });
   };
 
   const handleResposta = async (alternativa: string) => {
     if (!session?.user?.id || respondida) return;
     setRespondida(true);
-    const acertou = alternativa === "C";
+    const acertou = alternativa === 'C';
     await registrarRespostaQuestao({
       userId: session.user.id,
-      questaoId: "q1-avc",
+      questaoId: 'q1-avc',
       tema: nomeTema,
       acertou,
     });
-    alert(acertou ? "✅ Acertou! +2XP" : "❌ Errou! Tente de novo.");
+    toast({ title: acertou ? '✅ Acertou! +2XP' : '❌ Errou! Tente de novo.' });
   };
 
   return (
     <div className="container py-6 bg-background text-foreground min-h-screen">
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         onClick={() => navigate('/meu-caderno')}
         className="mb-6 border-border text-foreground"
       >
@@ -118,35 +132,41 @@ const TemaEditor = () => {
           <TabsContent value="resumo">
             <div className="flex justify-between items-center mb-4 text-muted-foreground text-sm">
               <div>🧠 Tempo estimado: 25 minutos</div>
-              <div>⏱️ Pomodoro: <span className="text-green-400">25:00</span></div>
+              <div>
+                ⏱️ Pomodoro:{' '}
+                <span className="text-green-400">// TODO: Inserir temporizador visual aqui</span>
+              </div>
             </div>
-            <Textarea
-              value={resumo}
-              onChange={(e) => setResumo(e.target.value)}
-              placeholder="Escreva aqui seu resumo, esquemas, tópicos..."
-              className="w-full min-h-[300px] bg-muted border border-border text-foreground"
-            />
+
+            <div className="bg-muted border border-border rounded-md p-4 min-h-[300px] text-foreground">
+              {editor && <EditorContent editor={editor} />}
+            </div>
+
             <div className="mt-4 flex gap-3">
               <Button
                 className="bg-purple-600 hover:bg-purple-700 text-white"
                 onClick={handleSalvarResumo}
                 disabled={salvando}
               >
-                {salvando ? "Salvando..." : "Salvar"}
+                {salvando ? 'Salvando...' : 'Salvar'}
               </Button>
-              <Button variant="outline" className="border-border">Exportar PDF</Button>
+              <Button variant="outline" className="border-border" disabled>
+                Exportar PDF (em breve)
+              </Button>
               <Button
                 className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={handleConcluirTema}
                 disabled={concluindo}
               >
-                {concluindo ? "Concluindo..." : "Concluir Tema"}
+                {concluindo ? 'Concluindo...' : 'Concluir Tema'}
               </Button>
             </div>
           </TabsContent>
 
           <TabsContent value="revisar">
-            <h2 className="text-lg font-semibold mb-4 text-yellow-400">📆 Revisões Programadas</h2>
+            <h2 className="text-lg font-semibold mb-4 text-yellow-400">
+              📆 Revisões Programadas
+            </h2>
             {revisoes.length === 0 ? (
               <p className="text-muted-foreground">Nenhuma revisão agendada ainda.</p>
             ) : (
@@ -157,7 +177,7 @@ const TemaEditor = () => {
                     className="bg-muted p-4 rounded-lg border border-border flex justify-between items-center"
                   >
                     <div>
-                      {rev.tipo} – {new Date(rev.data_revisao).toLocaleDateString()} –{" "}
+                      {rev.tipo} – {new Date(rev.data_revisao).toLocaleDateString()} –{' '}
                       {rev.concluida ? (
                         <span className="text-green-400">Concluído</span>
                       ) : (
@@ -185,12 +205,22 @@ const TemaEditor = () => {
             <h2 className="text-lg font-semibold mb-4 text-yellow-400">📝 Questões do Tema</h2>
             <ul className="space-y-3">
               <li className="bg-muted p-4 rounded-lg border border-border">
-                <p className="mb-2">1. Qual o principal sintoma de AVC isquêmico em artéria cerebral média esquerda?</p>
+                <p className="mb-2">
+                  1. Qual o principal sintoma de AVC isquêmico em artéria cerebral média esquerda?
+                </p>
                 <div className="space-y-2">
-                  <Button onClick={() => handleResposta("A")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">A) Afasia</Button>
-                  <Button onClick={() => handleResposta("B")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">B) Hemianopsia</Button>
-                  <Button onClick={() => handleResposta("C")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">C) Hemiparesia direita</Button>
-                  <Button onClick={() => handleResposta("D")} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">D) Disartria</Button>
+                  <Button onClick={() => handleResposta('A')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
+                    A) Afasia
+                  </Button>
+                  <Button onClick={() => handleResposta('B')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
+                    B) Hemianopsia
+                  </Button>
+                  <Button onClick={() => handleResposta('C')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
+                    C) Hemiparesia direita
+                  </Button>
+                  <Button onClick={() => handleResposta('D')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
+                    D) Disartria
+                  </Button>
                 </div>
               </li>
             </ul>
