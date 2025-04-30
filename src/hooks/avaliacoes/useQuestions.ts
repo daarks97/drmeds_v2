@@ -44,6 +44,11 @@ export const useQuestions = (slug: string | undefined) => {
           .select('*')
           .eq('prova', prova)
           .eq('ano', ano);
+          console.log('🎯 Buscando questões:', { prova, ano });
+console.log('👉 Slug original:', slug);
+console.log('✅ Resultado do Supabase:', data);
+console.log('❌ Erro do Supabase:', error);
+
 
         if (error) {
           toast({
