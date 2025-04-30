@@ -6,6 +6,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Heading from '@tiptap/extension-heading';
+import BulletList from '@tiptap/extension-bullet-list';
+import ListItem from '@tiptap/extension-list-item';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
 
 import { salvarResumo, buscarResumo } from '@/lib/supabase/resumos';
 import { concluirTema } from '@/lib/services/studyPlans_v2/completeStudyPlan';
@@ -27,7 +32,7 @@ const TemaEditor = () => {
   const [respondida, setRespondida] = useState(false);
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [StarterKit, Heading.configure({ levels: [1, 2] }), BulletList, ListItem, Bold, Italic],
     content: '',
     onUpdate: ({ editor }) => {
       setResumoSalvo(editor.getHTML());
@@ -35,10 +40,10 @@ const TemaEditor = () => {
   });
 
   useEffect(() => {
-    if (!session?.user?.id || !id) return;
+    if (!session?.user?.id || !id || !editor) return;
 
     buscarResumo(session.user.id, nomeTema).then((res) => {
-      if (res?.conteudo && editor) {
+      if (res?.conteudo) {
         editor.commands.setContent(res.conteudo);
         setResumoSalvo(res.conteudo);
       }
@@ -54,7 +59,6 @@ const TemaEditor = () => {
     setSalvando(true);
     const res = await salvarResumo(session.user.id, nomeTema, resumoSalvo);
     setSalvando(false);
-
     if (res.success) {
       toast({ title: 'Resumo salvo com sucesso!' });
     } else {
@@ -106,11 +110,7 @@ const TemaEditor = () => {
 
   return (
     <div className="container py-6 bg-background text-foreground min-h-screen">
-      <Button
-        variant="outline"
-        onClick={() => navigate('/meu-caderno')}
-        className="mb-6 border-border text-foreground"
-      >
+      <Button variant="outline" onClick={() => navigate('/meu-caderno')} className="mb-6">
         Voltar ao Caderno
       </Button>
 
@@ -132,14 +132,32 @@ const TemaEditor = () => {
           <TabsContent value="resumo">
             <div className="flex justify-between items-center mb-4 text-muted-foreground text-sm">
               <div>🧠 Tempo estimado: 25 minutos</div>
-              <div>
-                ⏱️ Pomodoro:{' '}
-                <span className="text-green-400">// TODO: Inserir temporizador visual aqui</span>
-              </div>
+              <div>⏱️ Pomodoro: <span className="text-green-400">[00:25:00]</span></div>
             </div>
 
+            {/* Toolbar TipTap */}
+            {editor && (
+              <div className="flex gap-2 mb-2 text-sm text-muted-foreground">
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBold().run()}>
+                  <strong>B</strong>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleItalic().run()}>
+                  <em>I</em>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+                  H1
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+                  H2
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => editor.chain().focus().toggleBulletList().run()}>
+                  • Lista
+                </Button>
+              </div>
+            )}
+
             <div className="bg-muted border border-border rounded-md p-4 min-h-[300px] text-foreground">
-              {editor && <EditorContent editor={editor} />}
+              {editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>}
             </div>
 
             <div className="mt-4 flex gap-3">
@@ -164,9 +182,7 @@ const TemaEditor = () => {
           </TabsContent>
 
           <TabsContent value="revisar">
-            <h2 className="text-lg font-semibold mb-4 text-yellow-400">
-              📆 Revisões Programadas
-            </h2>
+            <h2 className="text-lg font-semibold mb-4 text-yellow-400">📆 Revisões Programadas</h2>
             {revisoes.length === 0 ? (
               <p className="text-muted-foreground">Nenhuma revisão agendada ainda.</p>
             ) : (
@@ -209,18 +225,17 @@ const TemaEditor = () => {
                   1. Qual o principal sintoma de AVC isquêmico em artéria cerebral média esquerda?
                 </p>
                 <div className="space-y-2">
-                  <Button onClick={() => handleResposta('A')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
-                    A) Afasia
-                  </Button>
-                  <Button onClick={() => handleResposta('B')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
-                    B) Hemianopsia
-                  </Button>
-                  <Button onClick={() => handleResposta('C')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
-                    C) Hemiparesia direita
-                  </Button>
-                  <Button onClick={() => handleResposta('D')} disabled={respondida} variant="outline" className="w-full text-left justify-start border-border">
-                    D) Disartria
-                  </Button>
+                  {['Afasia', 'Hemianopsia', 'Hemiparesia direita', 'Disartria'].map((alt, idx) => (
+                    <Button
+                      key={alt}
+                      onClick={() => handleResposta(String.fromCharCode(65 + idx))}
+                      disabled={respondida}
+                      variant="outline"
+                      className="w-full text-left justify-start border-border"
+                    >
+                      {String.fromCharCode(65 + idx)}) {alt}
+                    </Button>
+                  ))}
                 </div>
               </li>
             </ul>
@@ -229,7 +244,7 @@ const TemaEditor = () => {
               <Button
                 variant="default"
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                onClick={() => navigate(`/questoes?tema=${encodeURIComponent(nomeTema)}`)}
+                onClick={() => navigate(`/avaliacoes?tema=${encodeURIComponent(nomeTema)}`)}
               >
                 🔍 Ver todas as questões sobre "{nomeTema}"
               </Button>
