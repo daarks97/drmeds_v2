@@ -52,7 +52,7 @@ const TopNavigation = () => {
               <Link to="/avaliacoes" className="text-gray-600 hover:text-purple-600 transition-colors">
                 Avaliações
               </Link>
-              <Link to="/revisions" className="text-gray-600 hover:text-purple-600 transition-colors">
+              <Link to="/revisoes" className="text-gray-600 hover:text-purple-600 transition-colors">
                 Revisões
               </Link>
             </div>
