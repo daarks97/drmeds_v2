@@ -40,7 +40,7 @@ const Landing: React.FC = () => {
         asChild
         className="mt-10 bg-yellow-400 text-black font-bold text-lg px-8 py-4 rounded-2xl hover:bg-yellow-300 transition duration-300 ease-in-out shadow-xl hover:scale-105"
       >
-        <a href="/register">🚀 Começar agora</a>
+        <a href="/login">🚀 Começar agora</a>
       </Button>
     </div>
   );

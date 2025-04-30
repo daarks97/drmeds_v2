@@ -21,7 +21,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Erro ao entrar",

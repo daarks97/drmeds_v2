@@ -19,7 +19,7 @@ const NotFound = () => {
           Opa! A página que você tentou acessar não existe.
         </p>
         <Link
-          to="/"
+          to="/home"
           className="inline-block mt-2 px-8 py-3 bg-yellow-400 text-black font-bold rounded-full hover:bg-yellow-300 transition-transform hover:scale-105 shadow-xl"
         >
           Voltar para o Início

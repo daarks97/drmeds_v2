@@ -189,14 +189,6 @@ const Planner: React.FC = () => {
       )}
 
       <div className="flex gap-4 justify-center mt-10">
-        <Button
-          variant="secondary"
-          className="flex items-center gap-2 border border-purple-500 text-purple-500 hover:bg-purple-900/20"
-          onClick={() => navigate('/planejamento/semana')}
-        >
-          <Calendar className="h-4 w-4" />
-          Ver planejamento da semana
-        </Button>
       </div>
     </div>
   );

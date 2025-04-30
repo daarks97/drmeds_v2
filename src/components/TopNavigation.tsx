@@ -40,7 +40,7 @@ const TopNavigation = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-6">
-            <Link to="/home" className="text-xl font-bold text-purple-700">DrMeds</Link>
+              <Link to="/home" className="text-xl font-bold text-purple-700">DrMeds</Link>
             <Separator orientation="vertical" className="h-8" />
             <div className="flex items-center space-x-4">
               <Link to="/planejamento" className="text-gray-600 hover:text-purple-600 transition-colors">

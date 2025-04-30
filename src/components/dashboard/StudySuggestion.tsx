@@ -7,6 +7,7 @@ import { useStudySuggestion } from '@/hooks/useStudySuggestion';
 import { StudyPlan, Revision } from '@/lib/types';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const mascots = {
   study: '📘', // estudo novo
@@ -19,12 +20,12 @@ const StudySuggestion = () => {
     suggestion,
     isLoading,
     handleStartStudy,
-    handleStartRevision,
     overdueRevisionsCount
   } = useStudySuggestion();
 
-  // Add a default value for remainingToday
-  const remainingToday = { study: 2, revision: 1 };
+  const navigate = useNavigate();
+
+  const remainingToday = { study: 2, revision: 1 }; // mock
   const [mascot, setMascot] = useState<string | null>(null);
 
   if (isLoading) {
@@ -63,7 +64,6 @@ const StudySuggestion = () => {
     ? (suggestion.item as Revision).study_plans?.theme
     : (suggestion.item as StudyPlan).theme;
 
-  // Safely extract revision_date for revisions only
   const isLateRevision = isRevision &&
     (suggestion.item as Revision).revision_date < new Date().toISOString().split('T')[0];
 
@@ -77,9 +77,13 @@ const StudySuggestion = () => {
       setMascot(isRevision ? mascots.revision : mascots.study);
     }, 1200);
 
-    isRevision
-      ? handleStartRevision(suggestion.item.id)
-      : handleStartStudy(suggestion.item.id);
+    if (isRevision) {
+      const studyPlanId = (suggestion.item as Revision).study_plan_id;
+      navigate(`/meu-caderno/tema/${studyPlanId}`);
+    } else {
+      const studyPlanId = (suggestion.item as StudyPlan).id;
+      navigate(`/meu-caderno/tema/${studyPlanId}`);    
+    }
   };
 
   const emoji = mascot || (isRevision ? mascots.revision : mascots.study);

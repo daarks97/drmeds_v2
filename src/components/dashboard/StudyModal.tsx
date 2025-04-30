@@ -8,6 +8,7 @@ import {
 import { motion } from 'framer-motion';
 import FocusTimer from './FocusTimer';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface StudyModalProps {
   open: boolean;
@@ -28,6 +29,7 @@ const getRandomQuote = () => {
 
 const StudyModal: React.FC<StudyModalProps> = ({ open, onOpenChange }) => {
   const [quote, setQuote] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (open) {
@@ -37,6 +39,7 @@ const StudyModal: React.FC<StudyModalProps> = ({ open, onOpenChange }) => {
 
   // Exemplo mockado - idealmente vem de um hook de progresso
   const dailyStudyTime = 90; // em minutos
+  const studyPlanId = 'exemplo-id'; // Substitua pelo ID real do plano de estudo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,6 +73,16 @@ const StudyModal: React.FC<StudyModalProps> = ({ open, onOpenChange }) => {
             </Button>
             <Button variant="outline" size="sm" onClick={() => console.log('+10 minutos')}>
               +10 min
+            </Button>
+          </div>
+
+          <div className="flex justify-center mt-4">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate(`/meu-caderno/tema/${studyPlanId}`)}
+            >
+              Revisar
             </Button>
           </div>
         </motion.div>
