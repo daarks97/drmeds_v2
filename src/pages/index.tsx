@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { useDashboard } from '@/hooks/useDashboard';
-import { useAchievements } from '@/hooks/useAchievements';
+import { useUserAchievements } from '@/hooks/useUserAchievements';
 import { useUserXP } from '@/hooks/useUserXP';
 import { useWeeklyProgress } from '@/hooks/useWeeklyProgress';
 import { useRevisions } from '@/hooks/useRevisions';
@@ -24,7 +24,7 @@ const MOTIVATIONAL_QUOTES = [
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
-  const { checkStudyAchievements } = useAchievements();
+  const { checkAutoAchievements } = useUserAchievements();
   const { studyTopic } = useDashboard();
   const { userXP } = useUserXP();
   const weeklyProgress = useWeeklyProgress();
@@ -92,8 +92,8 @@ const Index: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    checkStudyAchievements();
-  }, [checkStudyAchievements]);
+    checkAutoAchievements();
+  }, [checkAutoAchievements]);
 
   const currentLevel = userXP?.level || 1;
   const nextLevelXP = Math.pow((currentLevel + 1) * 10, 2);

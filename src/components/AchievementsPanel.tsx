@@ -1,19 +1,18 @@
 import React from "react";
-import { useAchievements } from "@/hooks/useAchievements";
+import { useUserAchievements } from "@/hooks/useUserAchievements";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function AchievementsPanel() {
-  const { achievements, isLoading } = useAchievements();
+  const { achievements, isLoading } = useUserAchievements();
 
-  // Lista completa com conquistas conhecidas (mesmo as ainda bloqueadas)
   const ALL_ACHIEVEMENTS = [
     "streak", "volume", "marathon", "revision", "focus", "first", "noturno"
   ];
-
-  const unlockedTypes = achievements.map((a) => a.achievement_type);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
@@ -29,6 +28,9 @@ export default function AchievementsPanel() {
           const icon = isUnlocked ? achievement.icon : "🔒";
           const title = isUnlocked ? achievement.title : "???";
           const description = isUnlocked ? achievement.description : "Desbloqueie esta conquista estudando!";
+          const unlockedAt = isUnlocked
+            ? format(new Date(achievement.unlocked_at), "dd 'de' MMMM yyyy", { locale: ptBR })
+            : null;
 
           return (
             <motion.div
@@ -43,9 +45,12 @@ export default function AchievementsPanel() {
                   <div className="font-semibold text-lg leading-tight">{title}</div>
                   <p className="text-sm text-gray-400 leading-snug">{description}</p>
                   {isUnlocked && (
-                    <Badge variant="default" className="w-fit text-xs mt-1">
-                      Desbloqueada!
-                    </Badge>
+                    <>
+                      <Badge variant="default" className="w-fit text-xs mt-1">
+                        Desbloqueada!
+                      </Badge>
+                      <p className="text-[11px] text-gray-400 italic">{unlockedAt}</p>
+                    </>
                   )}
                 </CardContent>
               </Card>

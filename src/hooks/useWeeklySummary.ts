@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Achievement } from '@/hooks/useAchievements';
+import { Achievement } from '@/hooks/useUserAchievements';
 import { getCurrentWeekDates } from '@/lib/weeklyDates';
 
 interface WeeklySummaryData {

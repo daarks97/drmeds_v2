@@ -4,11 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/use-toast';
 import { useUserXP } from '@/hooks/useUserXP';
-import Footer from '@/components/Footer';
 import { Helmet } from 'react-helmet';
-import AchievementsPanel from "@/components/AchievementsPanel";
+import AchievementsPanel from '@/components/AchievementsPanel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 
 interface UserData {
   id: string;
@@ -17,12 +19,16 @@ interface UserData {
   course?: string;
   specialty?: string;
   level?: string;
+  personalGoal?: string;
 }
 
 const UserProfile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openGoalEdit, setOpenGoalEdit] = useState(false);
+  const [formData, setFormData] = useState({ course: '', specialty: '', level: '', personalGoal: '' });
   const { userXP } = useUserXP();
 
   useEffect(() => {
@@ -36,31 +42,59 @@ const UserProfile = () => {
           return;
         }
 
-        const { data: userData, error } = await supabase
+        let { data: userData, error } = await supabase
           .from('users')
           .select('*')
           .eq('id', authUser.id)
           .single();
+
+        if (!userData) {
+          const { error: insertError } = await supabase.from('users').insert({
+            id: authUser.id,
+            email: authUser.email,
+            name: authUser.user_metadata?.full_name || 'Usuário'
+          });
+
+          if (insertError) {
+            console.error('Erro ao criar usuário:', insertError);
+            toast({ title: 'Erro', description: 'Não foi possível criar o perfil do usuário.' });
+            return;
+          }
+
+          const { data: newUserData } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authUser.id)
+            .single();
+
+          userData = newUserData;
+        }
 
         if (error) {
           console.error('Erro ao buscar dados:', error);
           return;
         }
 
-        setUser({
+        const userInfo = {
           id: authUser.id,
           email: authUser.email || '',
           name: userData?.name || 'Usuário',
           course: userData?.course,
           specialty: userData?.specialty,
-          level: userData?.level
+          level: userData?.level,
+          personalGoal: userData?.personalGoal || ''
+        };
+
+        setUser(userInfo);
+        setFormData({
+          course: userInfo.course || '',
+          specialty: userInfo.specialty || '',
+          level: userInfo.level || '',
+          personalGoal: userInfo.personalGoal || ''
         });
       } catch (error) {
         console.error('Erro no perfil:', error);
-        toast({
-          title: 'Erro',
-          description: 'Falha ao carregar perfil',
-        });
+        toast({ title: 'Erro', description: 'Falha ao carregar perfil' });
       } finally {
         setLoading(false);
       }
@@ -74,6 +108,19 @@ const UserProfile = () => {
     navigate('/login');
   };
 
+  const handleSave = async () => {
+    if (!user) return;
+    const { error } = await supabase.from('users').update(formData).eq('id', user.id);
+    if (error) {
+      toast({ title: 'Erro', description: 'Não foi possível salvar as alterações.' });
+    } else {
+      toast({ title: 'Sucesso', description: 'Perfil atualizado com sucesso!' });
+      setUser({ ...user, ...formData });
+      setOpenEdit(false);
+      setOpenGoalEdit(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Helmet>
@@ -81,8 +128,13 @@ const UserProfile = () => {
         <meta name="description" content="Gerencie suas informações pessoais e acompanhe seu progresso no DrMeds." />
       </Helmet>
 
-      <div className="container max-w-4xl mx-auto py-8">
-        <h1 className="text-2xl font-bold mb-8 text-yellow-400">Seu Perfil</h1>
+      <div className="container max-w-4xl mx-auto py-10 space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-yellow-400">Seu Perfil</h1>
+            <p className="text-muted-foreground mt-1">Acompanhe seu progresso e conquistas no DrMeds.</p>
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex justify-center">
@@ -90,9 +142,10 @@ const UserProfile = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            <Card className="bg-card border border-border">
-              <CardHeader>
+            <Card className="bg-card border border-border rounded-2xl shadow-lg">
+              <CardHeader className="flex flex-row justify-between items-center">
                 <CardTitle>Informações Pessoais</CardTitle>
+                <Button size="sm" variant="outline" onClick={() => setOpenEdit(true)}>Editar Perfil</Button>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-4">
@@ -114,12 +167,10 @@ const UserProfile = () => {
                     <h3 className="font-medium text-muted-foreground">Curso</h3>
                     <p className="text-foreground">{user?.course || 'Não definido'}</p>
                   </div>
-
                   <div>
                     <h3 className="font-medium text-muted-foreground">Especialidade</h3>
                     <p className="text-foreground">{user?.specialty || 'Não definido'}</p>
                   </div>
-
                   <div>
                     <h3 className="font-medium text-muted-foreground">Nível Acadêmico</h3>
                     <p className="text-foreground">{user?.level || 'Não definido'}</p>
@@ -128,31 +179,28 @@ const UserProfile = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border border-border">
-              <CardHeader>
-                <CardTitle>Estatísticas</CardTitle>
+            <Card className="bg-card border border-border rounded-2xl shadow-lg">
+              <CardHeader className="flex flex-row justify-between items-center">
+                <CardTitle>Meta Pessoal</CardTitle>
+                <Button size="sm" variant="outline" onClick={() => setOpenGoalEdit(true)}>Editar Meta</Button>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-purple-900 text-purple-100 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium">Nível</h3>
-                    <p className="text-2xl font-bold">{userXP?.level || 1}</p>
-                  </div>
-
-                  <div className="bg-blue-900 text-blue-100 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium">XP Total</h3>
-                    <p className="text-2xl font-bold">{userXP?.xp || 0}</p>
-                  </div>
-
-                  <div className="bg-green-900 text-green-100 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium">Conquistas</h3>
-                    <p className="text-2xl font-bold">--</p>
-                  </div>
-                </div>
+              <CardContent>
+                <p className="text-foreground text-sm">{user?.personalGoal || 'Nenhuma meta definida.'}</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border border-border">
+            <Card className="bg-card border border-border rounded-2xl shadow-lg">
+              <CardHeader>
+                <CardTitle>Progresso Geral</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm mb-2">Temas Concluídos</p>
+                <Progress value={40} />
+                <p className="text-xs text-muted-foreground mt-1">{12} de {30} temas concluídos</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border border-border rounded-2xl shadow-lg">
               <CardHeader>
                 <CardTitle>Minhas Conquistas</CardTitle>
               </CardHeader>
@@ -162,15 +210,43 @@ const UserProfile = () => {
             </Card>
 
             <div className="flex justify-end">
-              <Button variant="destructive" onClick={handleLogout}>
-                Sair da Conta
-              </Button>
+              <Button variant="destructive" onClick={handleLogout}>Sair da Conta</Button>
             </div>
           </div>
         )}
       </div>
 
-      <Footer currentPage="profile" />
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Perfil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input placeholder="Curso" value={formData.course} onChange={(e) => setFormData({ ...formData, course: e.target.value })} />
+            <Input placeholder="Especialidade" value={formData.specialty} onChange={(e) => setFormData({ ...formData, specialty: e.target.value })} />
+            <Input placeholder="Nível Acadêmico" value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })} />
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setOpenEdit(false)} variant="ghost">Cancelar</Button>
+            <Button onClick={handleSave}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openGoalEdit} onOpenChange={setOpenGoalEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Definir Meta Pessoal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input placeholder="Minha meta é..." value={formData.personalGoal} onChange={(e) => setFormData({ ...formData, personalGoal: e.target.value })} />
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setOpenGoalEdit(false)} variant="ghost">Cancelar</Button>
+            <Button onClick={handleSave}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

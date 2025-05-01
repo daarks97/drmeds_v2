@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy } from 'lucide-react';
-import { useAchievements } from '@/hooks/useAchievements';
+import { useAchievements } from '@/hooks/useUserAchievements';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ACHIEVEMENT_ICONS } from '@/lib/xpValues';
