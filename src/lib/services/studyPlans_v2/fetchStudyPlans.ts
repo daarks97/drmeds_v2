@@ -1,24 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
-import { StudyPlan } from "@/lib/types";
-import { QueryFunctionContext } from "@tanstack/react-query";
 
-export const fetchStudyPlans = async (
-  ctx: QueryFunctionContext<readonly unknown[]>
-): Promise<StudyPlan[]> => {
-  // Extrai disciplina com segurança
-  const discipline = (ctx.queryKey[1] as string | undefined) ?? 'Todas';
+export const fetchStudyPlans = async () => {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  let query = supabase
-    .from("study_plans")
-    .select("*")
-    .order("planned_date", { ascending: true });
-
-  if (discipline !== "Todas") {
-    query = query.eq("discipline", discipline);
+  if (userError || !userData?.user?.id) {
+    console.warn("⚠️ Sem sessão ativa no Supabase", userError);
+    return [];
   }
 
-  const { data, error } = await query;
+  const userId = userData.user.id;
+
+  const { data, error } = await supabase
+    .from("study_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .order("planned_date", { ascending: true });
 
   if (error) throw error;
-  return data as StudyPlan[];
+
+  return data;
 };

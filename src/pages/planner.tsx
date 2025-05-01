@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { format, parseISO, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
+import { useSession } from '@supabase/auth-helpers-react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Check,
@@ -25,17 +26,24 @@ import { StudyPlan } from '@/lib/types';
 
 const Planner: React.FC = () => {
   const navigate = useNavigate();
+  const session = useSession();
   const { openQuestionsModal } = useQuestionsModal();
   const { markCompletedMutation } = useStudyPlanMutations();
   const [showCompleted, setShowCompleted] = useState(false);
 
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
+  const userId = session?.user?.id;
 
   const { data } = useQuery<StudyPlan[]>({
     queryKey: ['studyPlans', 'Todas'],
     queryFn: fetchStudyPlans,
+    enabled: !!userId, // só executa a query se o usuário estiver logado
   });
+
+  if (!userId) {
+    return <p className="text-center text-muted-foreground mt-8">Carregando usuário...</p>;
+  }
 
   const studyPlans = (data ?? []) as StudyPlan[];
   const sortedPlans = studyPlans.sort((a, b) => a.planned_date.localeCompare(b.planned_date));
@@ -188,8 +196,7 @@ const Planner: React.FC = () => {
         </div>
       )}
 
-      <div className="flex gap-4 justify-center mt-10">
-      </div>
+      <div className="flex gap-4 justify-center mt-10"></div>
     </div>
   );
 };

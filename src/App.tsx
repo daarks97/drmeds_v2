@@ -36,6 +36,7 @@ const App = () => {
 
   return (
     <SessionContextProvider supabaseClient={supabase}>
+      <SupabaseSessionDebug />
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
@@ -86,6 +87,18 @@ const RoutesWrapper = () => {
       </div>
     </ProtectedRoute>
   );
+};
+
+import { useSession } from '@supabase/auth-helpers-react';
+
+const SupabaseSessionDebug = () => {
+  const session = useSession();
+
+  useEffect(() => {
+    console.log("🧪 Supabase Session:", session);
+  }, [session]);
+
+  return null;
 };
 
 export default App;
