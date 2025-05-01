@@ -75,7 +75,6 @@ export const useUserXP = () => {
     onSuccess: async ({ xpAmount, newXP }) => {
       await queryClient.invalidateQueries({ queryKey: ['userXP'] });
 
-      // Após atualizar, buscamos o novo XP para verificar nível
       const { data: { user } } = await supabase.auth.getUser();
       const { data: updatedData } = await supabase
         .from('user_xp')
@@ -88,22 +87,20 @@ export const useUserXP = () => {
       const newLevel = getMascotByXP(updatedData.xp).level;
       const oldLevel = userXP?.level ?? 1;
 
-      // Toast padrão
       toast({
         title: `+${xpAmount} XP ganho!`,
         description: `Continue assim, você está evoluindo!`,
       });
 
-      // 🎉 Se subiu de nível
       if (newLevel > oldLevel) {
         const { mascot } = getMascotByXP(updatedData.xp);
 
         toast({
           title: `🔥 Você subiu para o nível ${newLevel}!`,
-          description: `Novo mascote: ${mascot.title} — ${mascot.description}`,
+          description: `Novo mascote: ${mascot.title}! Você está evoluindo!`,
         });
 
-        // Aqui podemos futuramente disparar confete ou animações 🥳
+        // 🚀 Futuramente: disparar animação, som ou confete aqui
       }
     },
 
