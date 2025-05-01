@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AchievementsGrid from "@/components/AchievementsGrid";
 import { Helmet } from 'react-helmet';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useUserAchievements } from '@/hooks/useUserAchievements';
@@ -24,7 +25,7 @@ const MOTIVATIONAL_QUOTES = [
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
-  const { checkAutoAchievements } = useUserAchievements();
+  const { achievements, checkAutoAchievements } = useUserAchievements();
   const { studyTopic } = useDashboard();
   const { userXP } = useUserXP();
   const weeklyProgress = useWeeklyProgress();
@@ -34,6 +35,21 @@ const Index: React.FC = () => {
   const [randomQuote, setRandomQuote] = useState('');
   const [userName, setUserName] = useState('');
   const [weeklyStudyData, setWeeklyStudyData] = useState<{ day: string; minutes: number }[]>([]);
+  const fakeAchievements = [
+    {
+      id: "1",
+      title: "Memória de Elefante",
+      description: "Completou 3 revisões no prazo",
+      unlocked_at: "2025-04-30",
+    },
+    {
+      id: "2",
+      title: "Maratona de Estudos",
+      description: "Estudou 7 dias seguidos",
+      unlocked_at: null,
+    },
+  ];
+  
 
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
@@ -108,9 +124,16 @@ const Index: React.FC = () => {
       </Helmet>
 
       <main className="container max-w-4xl mx-auto py-8 px-6">
-        {/* Conteúdo renderizado aqui conforme acima */}
-      </main>
-    </div>
+  {/* Conteúdo renderizado aqui conforme acima */}
+
+  <section className="mt-10">
+    <h2 className="text-xl font-bold mb-4">Suas Conquistas</h2>
+    console.log("CONQUISTAS NO INDEX:", achievements);
+    <AchievementsGrid achievements={fakeAchievements} />
+  </section>
+</main>
+</div>
+
   );
 };
 

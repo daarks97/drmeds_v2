@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import AchievementsGrid from "@/components/AchievementsGrid";
+import { useUserAchievements } from "@/hooks/useUserAchievements";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +32,7 @@ const UserProfile = () => {
   const [openGoalEdit, setOpenGoalEdit] = useState(false);
   const [formData, setFormData] = useState({ course: '', specialty: '', level: '', personalGoal: '' });
   const { userXP } = useUserXP();
+  const { achievements } = useUserAchievements();
 
   useEffect(() => {
     const getUser = async () => {
@@ -201,13 +204,13 @@ const UserProfile = () => {
             </Card>
 
             <Card className="bg-card border border-border rounded-2xl shadow-lg">
-              <CardHeader>
-                <CardTitle>Minhas Conquistas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AchievementsPanel />
-              </CardContent>
-            </Card>
+  <CardHeader>
+    <CardTitle>Minhas Conquistas</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <AchievementsGrid achievements={achievements} />
+  </CardContent>
+</Card>
 
             <div className="flex justify-end">
               <Button variant="destructive" onClick={handleLogout}>Sair da Conta</Button>
