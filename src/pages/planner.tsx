@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { format, parseISO, isBefore } from 'date-fns';
+import { format, parseISO, isBefore, isToday, isTomorrow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
@@ -30,15 +30,16 @@ const Planner: React.FC = () => {
   const { openQuestionsModal } = useQuestionsModal();
   const { markCompletedMutation } = useStudyPlanMutations();
   const [showCompleted, setShowCompleted] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'today' | 'tomorrow' | 'late'>('all');
+  const [disciplineFilter, setDisciplineFilter] = useState<string>('Todas');
 
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
   const userId = session?.user?.id;
 
   const { data } = useQuery<StudyPlan[]>({
     queryKey: ['studyPlans', 'Todas'],
     queryFn: fetchStudyPlans,
-    enabled: !!userId, // só executa a query se o usuário estiver logado
+    enabled: !!userId,
   });
 
   if (!userId) {
@@ -47,7 +48,16 @@ const Planner: React.FC = () => {
 
   const studyPlans = (data ?? []) as StudyPlan[];
   const sortedPlans = studyPlans.sort((a, b) => a.planned_date.localeCompare(b.planned_date));
-  const upcomingPlans = sortedPlans.filter(p => !p.is_completed);
+
+  const filteredPlans = sortedPlans.filter(p => {
+    if (p.is_completed) return false;
+    const date = parseISO(p.planned_date);
+    if (filter === 'today') return isToday(date);
+    if (filter === 'tomorrow') return isTomorrow(date);
+    if (filter === 'late') return isBefore(date, today);
+    return true;
+  }).filter(p => disciplineFilter === 'Todas' || p.discipline === disciplineFilter);
+
   const completedPlans = sortedPlans.filter(p => p.is_completed);
 
   const handleTopicClick = (topicId: string) => {
@@ -55,7 +65,8 @@ const Planner: React.FC = () => {
   };
 
   const renderBadge = (plannedDate: string, isCompleted: boolean) => {
-    const isLate = isBefore(parseISO(plannedDate), today) && !isCompleted;
+    const parsedDate = parseISO(plannedDate);
+    const isLate = isBefore(parsedDate, today) && !isCompleted;
 
     if (isCompleted) {
       return (
@@ -78,7 +89,7 @@ const Planner: React.FC = () => {
     return (
       <Badge className="bg-purple-900 text-purple-100">
         <Clock className="h-4 w-4 mr-1" />
-        {plannedDate === todayStr ? 'Hoje' : 'Agendado'}
+        {isToday(parsedDate) ? 'Hoje' : isTomorrow(parsedDate) ? 'Amanhã' : 'Agendado'}
       </Badge>
     );
   };
@@ -86,14 +97,18 @@ const Planner: React.FC = () => {
   const renderCard = (topic: StudyPlan) => (
     <Card
       key={topic.id}
-      className="p-4 bg-card border border-border transition-colors"
+      className="p-4 bg-muted/5 border border-muted rounded-xl transition-all hover:shadow-md"
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-medium text-foreground">{topic.theme}</h3>
-          <p className="text-sm text-muted-foreground">
-            {topic.discipline} — {format(parseISO(topic.planned_date), 'dd/MM/yyyy')}
-          </p>
+      <div className="flex items-start justify-between mb-2">
+        <div className="space-y-1">
+          <h3 className="font-semibold text-lg text-foreground">{topic.theme}</h3>
+          <div className="flex gap-2 text-sm text-muted-foreground items-center">
+            <Calendar className="w-4 h-4" />
+            {format(parseISO(topic.planned_date), 'dd/MM/yyyy')} •
+            <Badge className="text-xs px-2 py-0.5 bg-secondary text-foreground border border-border">
+              {topic.discipline}
+            </Badge>
+          </div>
         </div>
         {renderBadge(topic.planned_date, topic.is_completed)}
       </div>
@@ -129,12 +144,14 @@ const Planner: React.FC = () => {
             onClick={() => markCompletedMutation.mutate(topic.id)}
           >
             <Check className="h-3.5 w-3.5" />
-            Marcar como concluído
+            Concluir
           </Button>
         )}
       </div>
     </Card>
   );
+
+  const disciplines = Array.from(new Set(studyPlans.map(p => p.discipline)));
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-background text-foreground min-h-screen">
@@ -146,14 +163,14 @@ const Planner: React.FC = () => {
         />
       </Helmet>
 
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2 text-yellow-400">
             <Calendar className="h-6 w-6 text-purple-500" />
             Seu planejamento
           </h1>
           <p className="text-muted-foreground mt-2">
-            Você tem {upcomingPlans.length} tema{upcomingPlans.length !== 1 ? 's' : ''} pendente{upcomingPlans.length !== 1 ? 's' : ''}.
+            Você tem {filteredPlans.length} tema{filteredPlans.length !== 1 ? 's' : ''} pendente{filteredPlans.length !== 1 ? 's' : ''}.
           </p>
         </div>
 
@@ -167,12 +184,29 @@ const Planner: React.FC = () => {
         </Button>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>Todos</Button>
+        <Button variant={filter === 'today' ? 'default' : 'outline'} onClick={() => setFilter('today')}>Hoje</Button>
+        <Button variant={filter === 'tomorrow' ? 'default' : 'outline'} onClick={() => setFilter('tomorrow')}>Amanhã</Button>
+        <Button variant={filter === 'late' ? 'default' : 'outline'} onClick={() => setFilter('late')}>Atrasados</Button>
+        <select
+          className="ml-auto bg-background border border-border text-foreground rounded px-2 py-1"
+          value={disciplineFilter}
+          onChange={e => setDisciplineFilter(e.target.value)}
+        >
+          <option value="Todas">Todas as disciplinas</option>
+          {disciplines.map(d => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="space-y-4 mb-8">
-        {upcomingPlans.length > 0 ? (
-          upcomingPlans.map(renderCard)
+        {filteredPlans.length > 0 ? (
+          filteredPlans.map(renderCard)
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            Nenhum tema pendente.
+            Nenhum tema encontrado para o filtro selecionado.
           </div>
         )}
       </div>
@@ -195,8 +229,6 @@ const Planner: React.FC = () => {
           )}
         </div>
       )}
-
-      <div className="flex gap-4 justify-center mt-10"></div>
     </div>
   );
 };
